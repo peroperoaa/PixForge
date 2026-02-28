@@ -37,7 +37,7 @@
       "skills": [
         "setup-fresh-project"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Implement ConfigManager with Layered Strategy",
