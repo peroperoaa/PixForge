@@ -16,7 +16,7 @@ class GeminiAdapter(BasePromptGenerator):
     def __init__(self, config_manager: ConfigManager):
         """Initialize the adapter with a configured client."""
         self.api_key = config_manager.get_api_key()
-        self.model_name = config_manager.get_model() or "gemini-2.5-flash"
+        self.model_name = config_manager.get_model() or "gemini-3.1-pro-preview"
         self.client = genai.Client(api_key=self.api_key)
         
     def _construct_request(self, input_data: PromptInput) -> Tuple[List[Union[str, types.Part]], types.GenerateContentConfig]:

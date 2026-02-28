@@ -55,8 +55,11 @@ class ConfigManager:
         # Requirement says "Missing key raises appropriate error" for API Key.
         # For model, let's assume similar behavior or a default if appropriate.
         # Based on test Scenario 1, it expects a value from file.
-        model = self._get_value('model', 'MODEL')
+        model = self._get_value('gemini_model', 'GEMINI_MODEL')
         if not model:
-            return "gemini-2.5-flash"
-        return model
+            return "gemini-3.1-pro-preview"
+        
+        if model != "gemini-3.1-pro-preview":
+            raise ValueError("Invalid model version. Only 'gemini-3.1-pro-preview' is supported.")
+            
         return model
