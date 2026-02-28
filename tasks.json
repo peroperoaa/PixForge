@@ -1,0 +1,231 @@
+{
+  "tasks": [
+    {
+      "task": "Initialize Python Project Structure",
+      "description": "Create project directories and configuration files for Module 1.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create directories: src/core, src/modules/prompt_gen, tests/core, tests/modules/prompt_gen"
+        },
+        {
+          "step": 2,
+          "description": "Create empty __init__.py files in all created directories"
+        },
+        {
+          "step": 3,
+          "description": "Create requirements.txt with google-genai, pydantic, python-dotenv, pytest, pytest-mock"
+        },
+        {
+          "step": 4,
+          "description": "Create .env.example with placeholders for GOOGLE_API_KEY and GEMINI_MODEL"
+        },
+        {
+          "step": 5,
+          "description": "Create .gitignore to exclude .env, __pycache__, and .pytest_cache"
+        }
+      ],
+      "acceptance-criteria": "Project structure exists. Requirements file lists all dependencies. Gitignore excludes sensitive files.",
+      "test-plan": {
+        "unit": [],
+        "integration": [],
+        "e2e-manual": [
+          "Verify folder structure matches design",
+          "Verify .env is ignored by git"
+        ]
+      },
+      "skills": [
+        "setup-fresh-project"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement ConfigManager with Layered Strategy",
+      "description": "Develop a configuration manager that reads settings from Runtime, File, and Environment variables in priority order.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/core/config.py and tests/core/test_config.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement ConfigManager class with methods to set/get API keys and models"
+        },
+        {
+          "step": 3,
+          "description": "Implement priority logic: Runtime args > config.json (simulated) > .env"
+        }
+      ],
+      "acceptance-criteria": "ConfigManager correctly resolves API key from highest priority source. Missing key raises appropriate error.",
+      "test-plan": {
+        "unit": [
+          "Runtime injection overrides environment variable",
+          "Environment variable is used when runtime/file are missing",
+          "get_api_key returns correct value for all sources",
+          "get_model_name defaults to gemini-3.1-pro-preview if not set"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "systematic-debugging"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Define Pydantic Data Models",
+      "description": "Create strict Pydantic schemas for Prompt Input and Output to ensure JSON mode compatibility.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/prompt_gen/schemas.py"
+        },
+        {
+          "step": 2,
+          "description": "Define PromptInput model (text_prompt, image_path optional)"
+        },
+        {
+          "step": 3,
+          "description": "Define PromptOutput model (positive_prompt, negative_prompt, style_parameters)"
+        }
+      ],
+      "acceptance-criteria": "Schemas validate correct input types and reject invalid data. PromptOutput schema can be exported to JSON schema format.",
+      "test-plan": {
+        "unit": [
+          "PromptInput accepts valid text and optional image path",
+          "PromptOutput validation fails if positive_prompt is missing",
+          "PromptOutput serializes to expected JSON structure"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Create BasePromptGenerator Interface",
+      "description": "Define an abstract base class to standardize the prompt generation interface across different providers.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/prompt_gen/interface.py"
+        },
+        {
+          "step": 2,
+          "description": "Define abstract method generate(input: PromptInput) -> PromptOutput"
+        }
+      ],
+      "acceptance-criteria": "Abstract class prevents instantiation. Concrete subclasses must implement generate method.",
+      "test-plan": {
+        "unit": [
+          "Cannot instantiate BasePromptGenerator directly",
+          "Subclass without generate method fails to instantiate"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Gemini Adapter Request Logic",
+      "description": "Develop the Gemini adapter to construct correct API requests using the Google GenAI SDK.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/prompt_gen/gemini_adapter.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement initialization logic using ConfigManager"
+        },
+        {
+          "step": 3,
+          "description": "Implement _construct_request method to prepare messages and config"
+        }
+      ],
+      "acceptance-criteria": "Adapter initializes with correct model. Request payload includes system instructions and JSON schema.",
+      "test-plan": {
+        "unit": [
+          "Adapter initializes with API key from ConfigManager",
+          "System prompt is correctly formatted",
+          "Generation config includes response_mime_type='application/json'"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "testing-safe-protocol"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Gemini Adapter Response Parsing",
+      "description": "Implement response handling logic to parse JSON output and handle API errors.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Implement generate method in GeminiAdapter"
+        },
+        {
+          "step": 2,
+          "description": "Add error handling for API failures and malformed JSON"
+        },
+        {
+          "step": 3,
+          "description": "Convert raw JSON response to PromptOutput object"
+        }
+      ],
+      "acceptance-criteria": "Valid JSON response is converted to PromptOutput. Network errors or invalid JSON raise custom exceptions.",
+      "test-plan": {
+        "unit": [
+          "Parses valid JSON string into PromptOutput object",
+          "Raises custom exception on API 500 error",
+          "Raises validation error if API returns non-conforming JSON"
+        ],
+        "integration": [
+          "Mocked client returns success and adapter returns valid object"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "systematic-debugging"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Verify Module 1 with Integration Script",
+      "description": "Create a script to run a real end-to-end test against the Gemini API (requires valid API key).",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create demo_module1.py in project root"
+        },
+        {
+          "step": 2,
+          "description": "Script should read real .env, instantiate adapter, and print result"
+        }
+      ],
+      "acceptance-criteria": "Script runs successfully with a valid API key and prints a structured PromptOutput.",
+      "test-plan": {
+        "unit": [],
+        "integration": [],
+        "e2e-manual": [
+          "Run script with valid key -> verify JSON output matches pixel art requirements",
+          "Run script with invalid key -> verify error message"
+        ]
+      },
+      "skills": [
+        "verification-before-completion"
+      ],
+      "complete": false
+    }
+  ]
+}
