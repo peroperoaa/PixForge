@@ -1,0 +1,14 @@
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field, ConfigDict
+
+class PromptInput(BaseModel):
+    model_config = ConfigDict(strict=True)
+    text_prompt: str = Field(..., description="The main text prompt for generation")
+    image_path: Optional[str] = Field(None, description="Optional path to an image for img2img")
+
+class PromptOutput(BaseModel):
+    model_config = ConfigDict(strict=True)
+    positive_prompt: str = Field(..., description="The generated positive prompt")
+
+    negative_prompt: str = Field(..., description="The generated negative prompt")
+    style_parameters: Dict[str, Any] = Field(..., description="Style parameters for generation")

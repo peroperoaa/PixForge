@@ -103,7 +103,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Create BasePromptGenerator Interface",
