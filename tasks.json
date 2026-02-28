@@ -198,7 +198,7 @@
         "tdd-workflow",
         "systematic-debugging"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Verify Module 1 with Integration Script",
