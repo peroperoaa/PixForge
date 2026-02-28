@@ -72,6 +72,17 @@ class GeminiAdapter(BasePromptGenerator):
         # Fallback parsing just in case
         try:
             # We first try to ensure it's loaded as JSON to handle raw text from the model properly
-            return PromptOutput.model_validate_json(response.text)
+            text_to_parse = response.text
+            if text_to_parse.startswith("```json"):
+                text_to_parse = text_to_parse[7:]
+                if text_to_parse.endswith("```"):
+                    text_to_parse = text_to_parse[:-3]
+            elif text_to_parse.startswith("```"):
+                text_to_parse = text_to_parse[3:]
+                if text_to_parse.endswith("```"):
+                    text_to_parse = text_to_parse[:-3]
+            text_to_parse = text_to_parse.strip()
+            
+            return PromptOutput.model_validate_json(text_to_parse)
         except (ValidationError, json.JSONDecodeError, ValueError) as e:
             raise PromptParsingError(f"Failed to parse prompt output from response: {str(e)}") from e

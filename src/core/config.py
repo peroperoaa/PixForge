@@ -57,12 +57,6 @@ class ConfigManager:
         # Based on test Scenario 1, it expects a value from file.
         model = self._get_value('model', 'MODEL')
         if not model:
-             # Default fallback if needed, or raise error. 
-             # The tests don't strictly specify what happens if model is missing, 
-             # but let's assume we return a default or raise error.
-             # Given "ConfigManager correctly resolves API key... Missing key raises...",
-             # Let's default to a safe value or raise error if critical.
-             # But strictly following scenarios, Scenario 1 expects 'file_model'.
-             # Let's just return what we find. If None, maybe default?
-             return "gemini-pro" # sensible default
+            return "gemini-2.5-flash"
+        return model
         return model
