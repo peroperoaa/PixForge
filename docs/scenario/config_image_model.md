@@ -14,7 +14,7 @@
 - [x] Write scenario document
 - [x] Write solid test according to document
 - [x] Run test and watch it failing
-- [ ] Implement to make test pass
-- [ ] Run test and confirm it passed
-- [ ] Refactor implementation without breaking test
-- [ ] Run test and confirm still passing after refactor
+- [x] Implement to make test pass
+- [x] Run test and confirm it passed
+- [x] Refactor implementation without breaking test
+- [x] Run test and confirm still passing after refactor
