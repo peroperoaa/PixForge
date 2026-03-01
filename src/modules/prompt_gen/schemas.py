@@ -1,5 +1,5 @@
-from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Dict, Any, Annotated
+from pydantic import BaseModel, Field, ConfigDict, WithJsonSchema
 
 class PromptInput(BaseModel):
     model_config = ConfigDict(strict=True)
@@ -11,4 +11,4 @@ class PromptOutput(BaseModel):
     positive_prompt: str = Field(..., description="The generated positive prompt")
 
     negative_prompt: str = Field(..., description="The generated negative prompt")
-    style_parameters: Dict[str, Any] = Field(..., description="Style parameters for generation")
+    style_parameters: Annotated[Dict[str, Any], WithJsonSchema({'type': 'object'})] = Field(..., description="Style parameters for generation")
