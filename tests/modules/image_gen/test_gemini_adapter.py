@@ -12,30 +12,32 @@ from src.modules.image_gen.exceptions import ImageGenerationError
 def mock_config_manager():
     config = Mock(spec=ConfigManager)
     config.get_api_key.return_value = "test_api_key"
-    config.get_image_model.return_value = "imagen-3.0-generate-002"
+    config.get_image_model.return_value = "gemini-3.1-flash-image-preview"
     return config
 
 def test_adapter_initialization(mock_config_manager):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client:
         adapter = GeminiImageAdapter(mock_config_manager)
         assert adapter.api_key == "test_api_key"
-        assert adapter.model_name == "imagen-3.0-generate-002"
+        assert adapter.model_name == "gemini-3.1-flash-image-preview"
         mock_client.assert_called_once_with(api_key="test_api_key")
 
 def test_generate_success(mock_config_manager, tmp_path):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client_class, \
          patch('src.modules.image_gen.gemini_adapter.Image.open') as mock_image_open, \
          patch('src.modules.image_gen.gemini_adapter.uuid.uuid4') as mock_uuid:
-         
+        
         mock_client_instance = Mock()
         mock_client_class.return_value = mock_client_instance
         
         # Mock the generation response
-        mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_bytes"
+        mock_part = MagicMock()
+        mock_part.inline_data = True
+        mock_part.as_image.return_value = MagicMock() # Mock PIL Image
+        
         mock_response = MagicMock()
-        mock_response.generated_images = [mock_image]
-        mock_client_instance.models.generate_images.return_value = mock_response
+        mock_response.parts = [mock_part]
+        mock_client_instance.models.generate_content.return_value = mock_response
         
         # Mock UUID
         mock_uuid.return_value = "1234-5678"
@@ -47,11 +49,9 @@ def test_generate_success(mock_config_manager, tmp_path):
         input_data = ImageGenInput(prompt="An epic fantasy hero")
         output = adapter.generate(input_data)
         
-        call_kwargs = mock_client_instance.models.generate_images.call_args.kwargs
-        assert call_kwargs['model'] == "imagen-3.0-generate-002"
-        assert call_kwargs['prompt'] == "An epic fantasy hero"
-        assert call_kwargs['config'].aspect_ratio == "1:1"
-        assert "ALLOW_ADULT" in str(call_kwargs['config'].person_generation).upper()
+        call_kwargs = mock_client_instance.models.generate_content.call_args.kwargs
+        assert call_kwargs['model'] == "gemini-3.1-flash-image-preview"
+        assert call_kwargs['contents'] == ["An epic fantasy hero"]
         
         assert isinstance(output, ImageGenOutput)
         assert output.image_path.endswith("1234-5678.png")
@@ -59,7 +59,7 @@ def test_generate_success(mock_config_manager, tmp_path):
 def test_generate_api_error(mock_config_manager):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client_class:
         mock_client_instance = Mock()
-        mock_client_instance.models.generate_images.side_effect = Exception("Test API error")
+        mock_client_instance.models.generate_content.side_effect = Exception("Test API error")
         mock_client_class.return_value = mock_client_instance
         
         adapter = GeminiImageAdapter(mock_config_manager)
@@ -70,7 +70,6 @@ def test_generate_api_error(mock_config_manager):
 
 def test_generate_save_success(mock_config_manager, tmp_path):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client_class, \
-         patch('src.modules.image_gen.gemini_adapter.Image.open') as mock_image_open, \
          patch('src.modules.image_gen.gemini_adapter.uuid.uuid4') as mock_uuid, \
          patch('src.modules.image_gen.gemini_adapter.os.makedirs') as mock_makedirs:
         
@@ -78,15 +77,16 @@ def test_generate_save_success(mock_config_manager, tmp_path):
         mock_client_class.return_value = mock_client_instance
         
         # Mock the generation response
-        mock_image = MagicMock()
-        mock_image.image.image_bytes = b"fake_image_bytes"
-        mock_response = MagicMock()
-        mock_response.generated_images = [mock_image]
-        mock_client_instance.models.generate_images.return_value = mock_response
-        
-        # Mock PIL Image.open
         mock_pil_image = MagicMock()
-        mock_image_open.return_value = mock_pil_image
+        
+        mock_part = MagicMock()
+        mock_part.inline_data = True
+        mock_part.as_image.return_value = mock_pil_image
+        
+        mock_response = MagicMock()
+        mock_response.parts = [mock_part]
+        
+        mock_client_instance.models.generate_content.return_value = mock_response
         
         # Mock UUID for predictable filename
         mock_uuid.return_value = "1234-5678"
@@ -99,8 +99,6 @@ def test_generate_save_success(mock_config_manager, tmp_path):
         input_data = ImageGenInput(prompt="A test image")
         output = adapter.generate(input_data)
         
-        # Verify Image generated by Gemini is processed twice (once for verify, once for save)
-        assert mock_image_open.call_count == 2
         # Verify it tries to save the file
         expected_path = os.path.join(test_output_dir, "1234-5678.png")
         
