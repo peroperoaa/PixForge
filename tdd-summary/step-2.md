@@ -2,4 +2,4 @@
 
 ## Scenario Documents Created
 
-- FR-1: BasePromptGenerator Interface - `docs/scenario/base_prompt_generator.md`
+- FR-1: Base Image Generator Interface - `docs/scenario/base_image_generator.md`
