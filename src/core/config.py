@@ -67,5 +67,5 @@ class ConfigManager:
         """Retrieve Image Model name with priority logic."""
         model = self._get_value('image_model', 'GEMINI_IMAGE_MODEL')
         if not model:
-            return "imagen-3.0-generate-002"
+            return "imagen-4.0-generate-001"
         return model

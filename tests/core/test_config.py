@@ -133,4 +133,4 @@ def test_image_model_default():
          patch.dict(os.environ, env_vars, clear=True):
         
         config_manager = ConfigManager(runtime_config=runtime_args)
-        assert config_manager.get_image_model() == 'imagen-3.0-generate-002'
+        assert config_manager.get_image_model() == 'imagen-4.0-generate-001'

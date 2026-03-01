@@ -18,7 +18,7 @@ class GeminiImageAdapter(BaseImageGenerator):
     def __init__(self, config_manager: ConfigManager):
         """Initialize the adapter with a configured client."""
         self.api_key = config_manager.get_api_key()
-        self.model_name = config_manager.get_image_model() or "imagen-3.0-generate-002"
+        self.model_name = config_manager.get_image_model() or "imagen-4.0-generate-001"
         self.client = genai.Client(api_key=self.api_key)
 
     def generate(self, input_data: ImageGenInput) -> ImageGenOutput:
