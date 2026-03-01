@@ -85,3 +85,52 @@ def test_missing_api_key_raises_error():
         
         with pytest.raises(ValueError, match="API Key not found"):
             config_manager.get_api_key()
+
+# Scenario: ConfigManager Support for Image Models
+def test_image_model_runtime_priority():
+    runtime_args = {'image_model': 'runtime-model'}
+    file_content = '{"image_model": "file-model"}'
+    env_vars = {'GEMINI_IMAGE_MODEL': 'env-model'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_image_model() == 'runtime-model'
+
+def test_image_model_file_priority():
+    runtime_args = {}
+    file_content = '{"image_model": "file-model"}'
+    env_vars = {'GEMINI_IMAGE_MODEL': 'env-model'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_image_model() == 'file-model'
+
+def test_image_model_env_priority():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'GEMINI_IMAGE_MODEL': 'env-model'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_image_model() == 'env-model'
+
+def test_image_model_default():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_image_model() == 'imagen-3.0-generate-002'

@@ -2,4 +2,4 @@
 
 ## Scenario Documents Created
 
-- FR-1: Base Image Generator Interface - `docs/scenario/base_image_generator.md`
+- FR-1: ConfigManager Support for Image Models - `docs/scenario/config_image_model.md`

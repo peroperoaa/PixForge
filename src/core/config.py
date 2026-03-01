@@ -63,3 +63,9 @@ class ConfigManager:
             raise ValueError("Invalid model version. Only 'gemini-3.1-pro-preview' is supported.")
             
         return model
+    def get_image_model(self) -> str:
+        """Retrieve Image Model name with priority logic."""
+        model = self._get_value('image_model', 'GEMINI_IMAGE_MODEL')
+        if not model:
+            return "imagen-3.0-generate-002"
+        return model
