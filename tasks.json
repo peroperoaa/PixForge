@@ -252,7 +252,7 @@
       "skills": [
         "installing-dependencies"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Create Base Image Generator Interface",
