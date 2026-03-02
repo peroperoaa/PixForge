@@ -2,31 +2,22 @@
 
 ## Functional Requirements
 
-### FR-1: Sequential Stage Execution
-FullPipeline.run executes stages PROMPT → IMAGE → PIXELIZATION → POST_PROCESSING in order when start_stage=PROMPT, chaining each stage's output into the next stage's input.
+### FR-1: CLI Argument Parsing
+Create `main.py` at project root with argparse-based ArgumentParser that defines all required arguments: `--prompt`, `--input`, `--start-from`, `--aspect-ratio`, `--palette`, `--colors`, `--sizes`, `--no-remove-bg`, `--asset-name`, `--output-dir`, `--auto-detect`. Arguments should have sensible defaults and proper validation.
 
-### FR-2: Stage Skipping
-Pipeline skips stages before start_stage when given an explicit start point (e.g., start_stage=PIXELIZATION skips PROMPT and IMAGE).
+### FR-2: Argument-to-Config Mapping
+Map parsed CLI arguments to `FullPipelineConfig`. `--palette` detects `.hex` suffix to distinguish preset names from file paths. `--start-from` accepts case-insensitive stage names. `--colors` switches to K-Means mode. `--auto-detect` sets `start_stage=None`.
 
-### FR-3: Auto-Detect Mode
-Pipeline uses ArtifactDetector when start_stage is None to determine the entry point and artifact path.
+### FR-3: Pipeline Execution with Progress
+Invoke the orchestrator and print stage-by-stage progress lines to stdout. Print final summary with output asset paths, total time, and any errors.
 
-### FR-4: Stage Output Chaining
-prompt_output.positive_prompt feeds into image_gen input, image_output.image_path feeds into pixelization input, pixelization_output.image_path feeds into post_processing input.
-
-### FR-5: Stage Timing and Results
-Each executed stage records a StageResult with timing data (duration_seconds), and FullPipelineResult contains all stage results plus total_duration_seconds.
-
-### FR-6: Error Handling and Abort
-Stage failures are caught, recorded in StageResult with error_message and success=False, and remaining stages are aborted.
-
-### FR-7: Dependency Injection
-FullPipeline accepts four module adapters (BasePromptGenerator, BaseImageGenerator, BasePixelization, BasePostProcessor) via constructor for testability.
+### FR-4: Error Handling and Exit Codes
+Exit code 0 on success, 1 on pipeline error, 2 on argument error. Handle `KeyboardInterrupt` and unexpected exceptions gracefully.
 
 ## Assumptions
 
-- start_stage=None in FullPipelineConfig triggers auto-detect mode. The schema needs to be updated to make start_stage Optional.
-- When auto-detect resolves to a stage > PROMPT, the detected artifact_path is used as input_image_path.
-- asset_name defaults to "output" if not specified in config.
-- output_dir defaults to ConfigManager.get_post_processing_output_dir() if not specified.
-- The orchestrator does not retry failed stages — it aborts immediately on first failure.
+- The CLI will construct real adapters (GeminiAdapter, GeminiImageAdapter, ComfyUIAdapter, PostProcessingPipeline) when running for real, but all tests will mock FullPipeline.
+- `--sizes` will accept comma-separated integers (e.g., `--sizes 32,64,128`).
+- `--start-from` maps: `prompt` -> PROMPT, `image` -> IMAGE, `pixelization` -> PIXELIZATION, `post_processing` -> POST_PROCESSING.
+- Progress messages go to stdout since the CLI is human-facing.
+- When `--auto-detect` is used alongside `--start-from`, `--auto-detect` takes precedence.

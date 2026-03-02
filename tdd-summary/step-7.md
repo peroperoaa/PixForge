@@ -3,30 +3,15 @@
 ## Summary
 
 - Functional requirements addressed:
-    - FR-1: Sequential stage execution (PROMPT → IMAGE → PIXELIZATION → POST_PROCESSING)
-    - FR-2: Stage skipping (start from any stage)
-    - FR-3: Auto-detect mode via ArtifactDetector when start_stage=None
-    - FR-4: Stage output chaining (prompt→image, image→pixelization, pixelization→post_processing)
-    - FR-5: Timing and results (StageResult with duration_seconds, FullPipelineResult with total)
-    - FR-6: Error handling and abort (catch exceptions, record failure, skip remaining stages)
-    - FR-7: Dependency injection (four module adapters accepted via constructor)
-- Scenario documents:
-    - `docs/scenario/orchestrator_sequential.md`
-    - `docs/scenario/orchestrator_skip_stages.md`
-    - `docs/scenario/orchestrator_auto_detect.md`
-    - `docs/scenario/orchestrator_error_handling.md`
-    - `docs/scenario/orchestrator_timing_results.md`
-- Test files:
-    - `tests/modules/full_pipeline/test_orchestrator_sequential.py` (4 tests)
-    - `tests/modules/full_pipeline/test_orchestrator_skip_stages.py` (3 tests)
-    - `tests/modules/full_pipeline/test_orchestrator_auto_detect.py` (3 tests)
-    - `tests/modules/full_pipeline/test_orchestrator_error_handling.py` (3 tests)
-    - `tests/modules/full_pipeline/test_orchestrator_timing_results.py` (3 tests)
-- Implementation:
-    - `src/modules/full_pipeline/orchestrator.py` (FullPipeline class)
-    - `src/modules/full_pipeline/schemas.py` (start_stage made Optional for auto-detect)
-- All 237 tests passing (16 new + 221 existing), no regressions.
+    - FR-1: CLI Argument Parsing — `build_parser()` with all 11 flags
+    - FR-2: Argument-to-Config Mapping — `args_to_config()` with palette detection, stage mapping, sizes parsing
+    - FR-3: Pipeline Execution with Progress — `run_pipeline()` + `_print_stage_progress()` for stage-by-stage output
+    - FR-4: Error Handling and Exit Codes — exit 0/1/2/130 for success/pipeline-error/argument-error/interrupt
+- Scenario documents: `docs/scenario/cli_argument_parsing.md`, `cli_config_mapping.md`, `cli_pipeline_progress.md`, `cli_error_handling.md`
+- Test files: `tests/scenario/test_cli_argument_parsing.py`, `test_cli_config_mapping.py`, `test_cli_pipeline_progress.py`, `test_cli_error_handling.py`
+- Implementation: `main.py` at project root
+- All 276 tests passing (39 new + 237 existing), no regressions.
 
 ## How to Test
 
-Run: `python -m pytest tests/modules/full_pipeline/test_orchestrator_sequential.py tests/modules/full_pipeline/test_orchestrator_skip_stages.py tests/modules/full_pipeline/test_orchestrator_auto_detect.py tests/modules/full_pipeline/test_orchestrator_error_handling.py tests/modules/full_pipeline/test_orchestrator_timing_results.py -v`
+Run: `python -m pytest tests/ -v`

@@ -248,7 +248,7 @@
         "tdd-workflow",
         "cli-guideline"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Verify Full Pipeline End-to-End",

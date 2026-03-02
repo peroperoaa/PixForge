@@ -2,10 +2,7 @@
 
 ## Scenario Documents Created
 
-- FR-1: Sequential Stage Execution - `docs/scenario/orchestrator_sequential.md`
-- FR-2: Stage Skipping - `docs/scenario/orchestrator_skip_stages.md`
-- FR-3: Auto-Detect Mode - `docs/scenario/orchestrator_auto_detect.md`
-- FR-5/FR-6: Error Handling and Abort - `docs/scenario/orchestrator_error_handling.md`
-- FR-4/FR-5: Timing and Results - `docs/scenario/orchestrator_timing_results.md`
-
-5 FRs covered by 5 scenario documents. ✓
+- FR-1: CLI Argument Parsing - `docs/scenario/cli_argument_parsing.md`
+- FR-2: Argument-to-Config Mapping - `docs/scenario/cli_config_mapping.md`
+- FR-3: Pipeline Execution with Progress - `docs/scenario/cli_pipeline_progress.md`
+- FR-4: Error Handling and Exit Codes - `docs/scenario/cli_error_handling.md`

@@ -2,10 +2,9 @@
 
 ## Failing Tests Created
 
-- FR-1: Sequential Execution - `docs/scenario/orchestrator_sequential.md` - `tests/modules/full_pipeline/test_orchestrator_sequential.py`
-- FR-2: Stage Skipping - `docs/scenario/orchestrator_skip_stages.md` - `tests/modules/full_pipeline/test_orchestrator_skip_stages.py`
-- FR-3: Auto-Detect Mode - `docs/scenario/orchestrator_auto_detect.md` - `tests/modules/full_pipeline/test_orchestrator_auto_detect.py`
-- FR-5/FR-6: Error Handling - `docs/scenario/orchestrator_error_handling.md` - `tests/modules/full_pipeline/test_orchestrator_error_handling.py`
-- FR-4/FR-5: Timing/Results - `docs/scenario/orchestrator_timing_results.md` - `tests/modules/full_pipeline/test_orchestrator_timing_results.py`
+- FR-1: CLI Argument Parsing - `docs/scenario/cli_argument_parsing.md` - `tests/scenario/test_cli_argument_parsing.py`
+- FR-2: Argument-to-Config Mapping - `docs/scenario/cli_config_mapping.md` - `tests/scenario/test_cli_config_mapping.py`
+- FR-3: Pipeline Execution with Progress - `docs/scenario/cli_pipeline_progress.md` - `tests/scenario/test_cli_pipeline_progress.py`
+- FR-4: Error Handling and Exit Codes - `docs/scenario/cli_error_handling.md` - `tests/scenario/test_cli_error_handling.py`
 
-All tests fail with ModuleNotFoundError (orchestrator module doesn't exist yet). RED confirmed.
+All 4 test files fail with `ModuleNotFoundError: No module named 'main'` — confirmed RED state.
