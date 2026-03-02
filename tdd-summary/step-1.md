@@ -2,23 +2,28 @@
 
 ## Functional Requirements
 
-### FR-1: Pixelization Module Schemas
-Define Pydantic models `PixelizationInput` and `PixelizationOutput` in `src/modules/pixelization/schemas.py`.
-- `PixelizationInput`: `image_path` (str, required), `image_bytes` (Optional[bytes] = None), `prompt` (Optional[str] = None), `denoising_strength` (Optional[float] = None)
-- `PixelizationOutput`: `image_path` (str, required), `width` (Optional[int] = None), `height` (Optional[int] = None)
+### FR-1: Post-Processing Schemas
+Define `PostProcessingInput` and `PostProcessingOutput` Pydantic models in `src/modules/post_processing/schemas.py`.
+- `PostProcessingInput`: `image_path` (str), `asset_name` (str), `target_sizes` (list[int], non-empty, all positive), `remove_background` (bool, default False), `color_count` (Optional[int]), `palette_path` (Optional[str]), `output_dir` (Optional[str])
+- Validation: `target_sizes` must be non-empty and contain only positive integers
+- Validation: At least one of `palette_path` or `color_count` must be provided
+- `PostProcessingOutput`: `output_paths` (list[str]), `target_sizes` (list[int]), `color_count` (Optional[int]), `palette_name` (Optional[str])
 
-### FR-2: Pixelization Module Interface
-Define `BasePixelization` abstract class in `src/modules/pixelization/interface.py` with abstract method `generate(input_data: PixelizationInput) -> PixelizationOutput`.
+### FR-2: Post-Processing Interface
+Define `BasePostProcessor` abstract class in `src/modules/post_processing/interface.py` with abstract method `process(input_data: PostProcessingInput) -> PostProcessingOutput`.
+- Cannot be instantiated directly
+- Subclasses must implement `process` method
 
-### FR-3: Pixelization Module Exceptions
-Define custom exception classes in `src/modules/pixelization/exceptions.py`:
-- `PixelizationError` (base exception)
-- `ComfyUIConnectionError(PixelizationError)`
-- `ComfyUITimeoutError(PixelizationError)`
-- `ComfyUIWorkflowError(PixelizationError)`
+### FR-3: Post-Processing Exceptions
+Define exception hierarchy in `src/modules/post_processing/exceptions.py`:
+- `PostProcessingError` (base exception)
+- `BackgroundRemovalError(PostProcessingError)`
+- `ColorQuantizationError(PostProcessingError)`
+- `DownscaleError(PostProcessingError)`
 
 ## Assumptions
 
-- Follow existing module patterns exactly (image_gen module as reference).
+- Follow existing module patterns (pixelization module as reference).
 - All `__init__.py` files are empty.
 - Schemas validation follows Pydantic v2 conventions consistent with the rest of the project.
+- `palette_path` and `color_count` validation: at least one must be non-None.

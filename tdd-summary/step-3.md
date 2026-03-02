@@ -2,6 +2,6 @@
 
 ## Failing Tests Created
 
-- FR-1: Pixelization Schemas - `docs/scenario/pixelization_schemas.md` - `tests/modules/pixelization/test_schemas.py`
-- FR-2: Pixelization Interface - `docs/scenario/pixelization_interface.md` - `tests/modules/pixelization/test_interface.py`
-- FR-3: Pixelization Exceptions - `docs/scenario/pixelization_exceptions.md` - `tests/modules/pixelization/test_exceptions.py`
+- FR-1: Post-Processing Schemas — `docs/scenario/post_processing_schemas.md` — `tests/modules/post_processing/test_schemas.py`
+- FR-2: Post-Processing Interface — `docs/scenario/post_processing_interface.md` — `tests/modules/post_processing/test_interface.py`
+- FR-3: Post-Processing Exceptions — `docs/scenario/post_processing_exceptions.md` — `tests/modules/post_processing/test_exceptions.py`

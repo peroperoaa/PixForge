@@ -142,7 +142,7 @@ def test_comfyui_url_default():
          patch.dict(os.environ, env_vars, clear=True):
         
         config_manager = ConfigManager(runtime_config=runtime_args)
-        assert config_manager.get_comfyui_url() == 'http://127.0.0.1:8188'
+        assert config_manager.get_comfyui_url() == 'http://127.0.0.1:8000'
 
 def test_comfyui_url_from_env():
     runtime_args = {}

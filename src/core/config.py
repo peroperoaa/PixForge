@@ -74,7 +74,7 @@ class ConfigManager:
         """Retrieve ComfyUI URL with priority logic."""
         url = self._get_value('comfyui_url', 'COMFYUI_URL')
         if not url:
-            return "http://127.0.0.1:8188"
+            return "http://127.0.0.1:8000"
         return url
 
     def get_comfyui_workflow_template(self) -> str:

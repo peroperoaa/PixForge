@@ -13,7 +13,7 @@ from src.modules.pixelization.exceptions import (
 class ComfyUIClient:
     """Low-level HTTP/WebSocket client for communicating with ComfyUI API."""
 
-    def __init__(self, base_url: str = "http://127.0.0.1:8188", timeout: int = 300):
+    def __init__(self, base_url: str = "http://127.0.0.1:8000", timeout: int = 300):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout  # seconds
         self.client_id = str(uuid.uuid4())

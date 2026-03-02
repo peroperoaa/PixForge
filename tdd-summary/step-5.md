@@ -2,8 +2,8 @@
 
 ## Refactorings Completed
 
-- FR-1: Pixelization Schemas - `docs/scenario/pixelization_schemas.md` - No refactoring needed; implementation is minimal and follows existing patterns
-- FR-2: Pixelization Interface - `docs/scenario/pixelization_interface.md` - No refactoring needed; implementation is minimal and follows existing patterns
-- FR-3: Pixelization Exceptions - `docs/scenario/pixelization_exceptions.md` - No refactoring needed; implementation is minimal and follows existing patterns
+- FR-1: Post-Processing Schemas — Code is already clean and minimal; no refactoring needed.
+- FR-2: Post-Processing Interface — Code is already clean and minimal; no refactoring needed.
+- FR-3: Post-Processing Exceptions — Code is already clean and minimal; no refactoring needed.
 
-All tests still pass after refactoring. Scenario documents updated.
+All tests still pass after review (17/17). Scenario documents updated.

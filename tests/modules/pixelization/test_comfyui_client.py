@@ -13,7 +13,7 @@ import requests
 class TestComfyUIClientInit:
     def test_default_init(self):
         client = ComfyUIClient()
-        assert client.base_url == "http://127.0.0.1:8188"
+        assert client.base_url == "http://127.0.0.1:8000"
         assert client.timeout == 300
         assert client.client_id  # UUID
 

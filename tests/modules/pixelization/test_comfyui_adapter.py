@@ -57,7 +57,7 @@ SAMPLE_WORKFLOW_TEMPLATE = {
 def mock_config():
     """Create a mock ConfigManager."""
     config = MagicMock(spec=ConfigManager)
-    config.get_comfyui_url.return_value = "http://127.0.0.1:8188"
+    config.get_comfyui_url.return_value = "http://127.0.0.1:8000"
     config.get_comfyui_workflow_template.return_value = "workflow_api_template.json"
     return config
 

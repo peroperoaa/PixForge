@@ -570,6 +570,371 @@
         "verification-before-completion"
       ],
       "complete": true
+    },
+    {
+      "task": "Define Post-Processing Module Structure and Schemas",
+      "description": "Create directories, Pydantic schemas, exceptions, and abstract interface for the post-processing module.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing and tests/modules/post_processing directories with __init__.py"
+        },
+        {
+          "step": 2,
+          "description": "Define PostProcessingInput schema with image_path, asset_name, target_sizes, remove_background, color_count, palette_path, output_dir fields"
+        },
+        {
+          "step": 3,
+          "description": "Define PostProcessingOutput schema with output_paths, target_sizes, color_count, palette_name fields"
+        },
+        {
+          "step": 4,
+          "description": "Create exceptions.py with PostProcessingError, BackgroundRemovalError, ColorQuantizationError, DownscaleError"
+        },
+        {
+          "step": 5,
+          "description": "Create interface.py with BasePostProcessor abstract class defining process(input) -> output method"
+        }
+      ],
+      "acceptance-criteria": "Directory structure exists for module 4. PostProcessingInput validates target_sizes as non-empty list of positive integers. PostProcessingInput rejects palette_path and color_count both being None when quantization is implicitly expected. PostProcessingOutput serializes output_paths as list of strings. BasePostProcessor prevents direct instantiation and enforces process method.",
+      "test-plan": {
+        "unit": [
+          "PostProcessingInput accepts valid image_path, asset_name, target_sizes=[32,64], remove_background=True, color_count=16",
+          "PostProcessingInput rejects empty target_sizes list",
+          "PostProcessingInput rejects target_sizes containing non-positive integers",
+          "PostProcessingInput accepts palette_path without color_count (palette mode)",
+          "PostProcessingInput accepts color_count without palette_path (K-Means mode)",
+          "PostProcessingOutput serializes output_paths as list of file path strings",
+          "BasePostProcessor raises TypeError on direct instantiation",
+          "Subclass without process method raises TypeError on instantiation"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Update Dependencies and ConfigManager for Module 4",
+      "description": "Add rembg and scikit-learn to requirements.txt and extend ConfigManager with post-processing default settings.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Add rembg, scikit-learn, numpy to requirements.txt"
+        },
+        {
+          "step": 2,
+          "description": "Add POST_PROCESSING_OUTPUT_DIR, DEFAULT_COLOR_COUNT, DEFAULT_TARGET_SIZES, REMBG_MODEL to .env.example"
+        },
+        {
+          "step": 3,
+          "description": "Implement get_post_processing_output_dir method in ConfigManager with default './output/assets'"
+        },
+        {
+          "step": 4,
+          "description": "Implement get_default_color_count method in ConfigManager with default 16"
+        },
+        {
+          "step": 5,
+          "description": "Implement get_default_target_sizes method in ConfigManager returning list of ints with default [32, 64]"
+        }
+      ],
+      "acceptance-criteria": "requirements.txt includes rembg, scikit-learn, numpy. ConfigManager returns default output dir './output/assets' when no override exists. ConfigManager returns default color_count=16. ConfigManager returns default target_sizes=[32,64]. Runtime args override environment variables for all new settings.",
+      "test-plan": {
+        "unit": [
+          "get_post_processing_output_dir returns './output/assets' when no config is set",
+          "get_post_processing_output_dir returns runtime override value when provided",
+          "get_default_color_count returns 16 when no config is set",
+          "get_default_color_count returns integer from environment variable string",
+          "get_default_target_sizes returns [32, 64] when no config is set",
+          "get_default_target_sizes parses comma-separated env string '32,64,128' into int list"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "installing-dependencies"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Background Remover",
+      "description": "Create a BackgroundRemover class wrapping the rembg library to remove image backgrounds and produce alpha-channel PNGs.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing/background_remover.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement remove method accepting PIL Image and returning PIL Image with RGBA alpha channel"
+        },
+        {
+          "step": 3,
+          "description": "Add configurable rembg model selection (default u2net)"
+        },
+        {
+          "step": 4,
+          "description": "Handle rembg errors and wrap them in BackgroundRemovalError"
+        }
+      ],
+      "acceptance-criteria": "BackgroundRemover.remove accepts an RGB PIL Image and returns an RGBA PIL Image. Output image has identical width and height to input. Alpha channel contains non-trivial values (not all 0 or all 255 for images with backgrounds). Rembg failures raise BackgroundRemovalError with descriptive message.",
+      "test-plan": {
+        "unit": [
+          "remove returns RGBA mode image when given RGB input with mock rembg returning known alpha data",
+          "remove returns RGBA mode image when given RGBA input (already has alpha) with mock rembg",
+          "Output image dimensions match input image dimensions using mock rembg",
+          "remove raises BackgroundRemovalError when rembg throws an internal exception (mocked)",
+          "BackgroundRemover initializes with default model 'u2net' when no model specified",
+          "BackgroundRemover initializes with custom model name when explicitly provided"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "testing-safe-protocol"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Palette Loader",
+      "description": "Create a PaletteLoader class to parse Lospec .hex palette files and provide built-in classic palettes like GB and NES.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing/palette_loader.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement load_from_hex_file method parsing .hex format (one hex color per line, e.g. 'FF5733')"
+        },
+        {
+          "step": 3,
+          "description": "Implement built-in presets dictionary with GB (4 colors), NES (54 colors), and Sweetie-16 (16 colors) palettes"
+        },
+        {
+          "step": 4,
+          "description": "Implement get_preset method returning palette by name"
+        },
+        {
+          "step": 5,
+          "description": "Validate that loaded palettes contain valid RGB tuples and have at least 2 colors"
+        }
+      ],
+      "acceptance-criteria": "PaletteLoader.load_from_hex_file correctly parses a .hex file into a list of (R, G, B) tuples. Built-in presets return correct color counts (GB=4, Sweetie-16=16). get_preset raises ValueError for unknown preset names. Palette with fewer than 2 colors raises ValueError. Hex strings with invalid characters raise ValueError.",
+      "test-plan": {
+        "unit": [
+          "load_from_hex_file parses '0f380f\\n306230\\n8bac0f\\n9bbc0f' into 4 correct RGB tuples",
+          "load_from_hex_file ignores empty lines and lines starting with '#' (comments)",
+          "load_from_hex_file raises ValueError for hex string with invalid characters like 'ZZZZZZ'",
+          "load_from_hex_file raises ValueError when file contains fewer than 2 valid colors",
+          "get_preset('gb') returns exactly 4 RGB tuples matching Game Boy green palette",
+          "get_preset('sweetie-16') returns exactly 16 RGB tuples",
+          "get_preset('nonexistent') raises ValueError with descriptive message",
+          "All built-in preset colors have R, G, B values in range 0-255"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Color Quantizer",
+      "description": "Create a ColorQuantizer class supporting K-Means auto-color selection and fixed-palette nearest-color mapping while preserving alpha channels.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing/color_quantizer.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement quantize_kmeans method using scikit-learn KMeans to reduce image to N colors"
+        },
+        {
+          "step": 3,
+          "description": "Implement quantize_palette method mapping each pixel to nearest color in a given palette using Euclidean distance"
+        },
+        {
+          "step": 4,
+          "description": "Implement quantize dispatch method that chooses kmeans or palette mode based on input"
+        },
+        {
+          "step": 5,
+          "description": "Preserve alpha channel during quantization by processing only RGB channels"
+        },
+        {
+          "step": 6,
+          "description": "Wrap scikit-learn errors in ColorQuantizationError"
+        }
+      ],
+      "acceptance-criteria": "quantize_kmeans reduces a multi-color image to exactly N unique colors. quantize_palette maps all pixels to the nearest palette color with zero off-palette colors in output. Alpha channel values are preserved identically before and after quantization. ColorQuantizationError is raised for invalid inputs (N<2, empty palette).",
+      "test-plan": {
+        "unit": [
+          "quantize_kmeans with N=4 on a 10x10 image with 100 random colors produces output with at most 4 unique RGB values",
+          "quantize_kmeans with N=2 on a pure red/blue checkerboard returns exactly red and blue",
+          "quantize_kmeans raises ColorQuantizationError when N < 2",
+          "quantize_palette maps pure red pixel (255,0,0) to nearest palette color in [(200,0,0),(0,200,0),(0,0,200)]",
+          "quantize_palette with GB 4-color palette produces output containing only those 4 colors",
+          "quantize_palette output contains zero colors not present in the input palette",
+          "Alpha channel is preserved: RGBA image with alpha=128 region retains alpha=128 after quantize_kmeans",
+          "Alpha channel is preserved: RGBA image with alpha=0 region retains alpha=0 after quantize_palette",
+          "quantize dispatches to quantize_palette when palette is provided and to quantize_kmeans when only color_count is given"
+        ],
+        "integration": [
+          "ColorQuantizer with palette loaded from PaletteLoader.get_preset('gb') produces output with exactly 4 unique colors"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "systematic-debugging"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Nearest Neighbor Downscaler",
+      "description": "Create a Downscaler class using PIL nearest-neighbor interpolation to resize images to exact target pixel dimensions.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing/downscaler.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement downscale method accepting PIL Image and target size, returning square resized image"
+        },
+        {
+          "step": 3,
+          "description": "Implement downscale_multi method accepting a list of target sizes and returning a list of resized images"
+        },
+        {
+          "step": 4,
+          "description": "Validate that only NEAREST resampling is used (never BILINEAR or LANCZOS)"
+        },
+        {
+          "step": 5,
+          "description": "Handle edge cases: target size larger than source, non-square source images"
+        }
+      ],
+      "acceptance-criteria": "downscale produces exact target dimensions (e.g. 32x32). Output uses NEAREST resampling only (no anti-aliased edges). downscale_multi returns correct number of images matching target sizes list. Non-square source images are handled by center-cropping or fitting to square. DownscaleError raised for invalid target sizes (0 or negative).",
+      "test-plan": {
+        "unit": [
+          "downscale of 256x256 RGBA image to 32 produces exactly 32x32 image",
+          "downscale of 512x512 RGB image to 64 produces exactly 64x64 image",
+          "downscale preserves RGBA mode (does not drop alpha channel)",
+          "downscale using a known 4x4 checkerboard pattern scaled to 2x2 produces expected pixel values (no blending)",
+          "downscale_multi with [32, 64, 128] returns list of 3 images with matching dimensions",
+          "downscale raises DownscaleError when target size is 0",
+          "downscale raises DownscaleError when target size is negative",
+          "Non-square 256x128 image downscaled to 32 produces 32x32 output"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement PostProcessing Pipeline",
+      "description": "Create the PostProcessingPipeline class that orchestrates background removal, color quantization, downscaling, and asset export based on input configuration.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/post_processing/pipeline.py implementing BasePostProcessor"
+        },
+        {
+          "step": 2,
+          "description": "Implement process method loading input image and chaining steps based on PostProcessingInput flags"
+        },
+        {
+          "step": 3,
+          "description": "Implement step-skipping logic: skip background removal when remove_background=False, skip quantization when both color_count and palette_path are None"
+        },
+        {
+          "step": 4,
+          "description": "Implement asset naming convention: output files as {asset_name}_{size}x{size}.png"
+        },
+        {
+          "step": 5,
+          "description": "Create output directory if it does not exist"
+        },
+        {
+          "step": 6,
+          "description": "Populate PostProcessingOutput with all generated file paths and metadata"
+        }
+      ],
+      "acceptance-criteria": "Pipeline executes full chain (remove bg → quantize → downscale → save) when all options enabled. Pipeline skips background removal when remove_background=False. Pipeline skips color quantization when color_count is None and palette_path is None. Output files follow naming convention '{asset_name}_{size}x{size}.png'. Output directory is auto-created if missing. PostProcessingOutput contains correct list of output_paths matching target_sizes count.",
+      "test-plan": {
+        "unit": [
+          "Pipeline with all steps enabled calls BackgroundRemover, ColorQuantizer, and Downscaler in correct order (mocked components)",
+          "Pipeline with remove_background=False skips BackgroundRemover (mocked, verify not called)",
+          "Pipeline with color_count=None and palette_path=None skips ColorQuantizer (mocked, verify not called)",
+          "Pipeline generates files named '{asset_name}_{size}x{size}.png' for each target_size (mocked filesystem)",
+          "Pipeline creates output_dir if it does not exist (mocked os.makedirs)",
+          "Pipeline returns PostProcessingOutput with output_paths matching number of target_sizes"
+        ],
+        "integration": [
+          "Pipeline with real BackgroundRemover (mocked rembg), real ColorQuantizer, and real Downscaler produces correct-dimension output files on temp filesystem",
+          "Pipeline processes a real 256x256 RGBA test image through full chain and saves to temp directory with correct filenames",
+          "Pipeline with palette_path pointing to a real .hex file quantizes using palette mode via PaletteLoader and ColorQuantizer"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "systematic-debugging"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Verify Module 4 with Integration Script",
+      "description": "Create demo_module4.py to run the full post-processing pipeline on a pixelized image from Module 3 output.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create demo_module4.py in project root"
+        },
+        {
+          "step": 2,
+          "description": "Load a pixelized image from output/images directory as input"
+        },
+        {
+          "step": 3,
+          "description": "Configure PostProcessingInput with representative settings (remove_bg=True, 16 colors, sizes=[32,64])"
+        },
+        {
+          "step": 4,
+          "description": "Execute pipeline and print status at each processing stage"
+        },
+        {
+          "step": 5,
+          "description": "Verify all output files exist and print dimensions and file sizes"
+        }
+      ],
+      "acceptance-criteria": "Script runs end-to-end and produces correctly named PNG files in output/assets directory. Output images have exact target dimensions. Output images contain limited color palettes visible on inspection.",
+      "test-plan": {
+        "unit": [],
+        "integration": [],
+        "e2e-manual": [
+          "Execute script with a pixelized source image -> verify 32x32 and 64x64 PNGs are generated in output/assets",
+          "Open output PNGs in image viewer -> verify transparent background (alpha channel) and limited color palette",
+          "Inspect output filenames match pattern '{asset_name}_32x32.png' and '{asset_name}_64x64.png'",
+          "Execute script with remove_background=False -> verify output retains original background"
+        ]
+      },
+      "skills": [
+        "verification-before-completion"
+      ],
+      "complete": false
     }
   ]
 }

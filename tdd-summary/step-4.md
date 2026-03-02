@@ -2,8 +2,8 @@
 
 ## Implementations Completed
 
-- FR-1: Pixelization Schemas - `docs/scenario/pixelization_schemas.md` - Implementation in `src/modules/pixelization/schemas.py`
-- FR-2: Pixelization Interface - `docs/scenario/pixelization_interface.md` - Implementation in `src/modules/pixelization/interface.py`
-- FR-3: Pixelization Exceptions - `docs/scenario/pixelization_exceptions.md` - Implementation in `src/modules/pixelization/exceptions.py`
+- FR-1: Post-Processing Schemas — `docs/scenario/post_processing_schemas.md` — Implementation in `src/modules/post_processing/schemas.py`
+- FR-2: Post-Processing Interface — `docs/scenario/post_processing_interface.md` — Implementation in `src/modules/post_processing/interface.py`
+- FR-3: Post-Processing Exceptions — `docs/scenario/post_processing_exceptions.md` — Implementation in `src/modules/post_processing/exceptions.py`
 
-All tests now pass (14/14). Scenario documents updated.
+All tests now pass (17/17). Scenario documents updated.
