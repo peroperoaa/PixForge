@@ -2,7 +2,6 @@
 
 ## Scenario Documents Created
 
-- FR-1: PreProcessing Schema Definitions - `docs/scenario/pre_processing_schemas.md`
-- FR-2: PreProcessor Process Pipeline - `docs/scenario/pre_processing_pipeline.md`
-- FR-3: Subject-Aware Cropping - `docs/scenario/pre_processing_cropping.md`
-- FR-4: PreProcessing Exceptions - `docs/scenario/pre_processing_exceptions.md`
+- FR-1: Workflow Template Parameter Optimization - `docs/scenario/workflow_template_params.md`
+- FR-2: Dynamic Prompt Injection with Pixel-Art Prefix - `docs/scenario/dynamic_prompt_injection.md`
+- FR-3: Update Existing Tests — covered by updating existing test file inline (no separate scenario doc needed; tests updated in existing `tests/modules/pixelization/test_comfyui_adapter.py`)

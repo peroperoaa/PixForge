@@ -24,7 +24,7 @@ SAMPLE_WORKFLOW_TEMPLATE = {
     "2": {
         "class_type": "CLIPTextEncode",
         "inputs": {
-            "text": "pixel art style",
+            "text": "{prompt}",
             "clip": ["4", 0]
         }
     },
@@ -36,7 +36,7 @@ SAMPLE_WORKFLOW_TEMPLATE = {
             "cfg": 7.0,
             "sampler_name": "euler",
             "scheduler": "normal",
-            "denoise": 0.55,
+            "denoise": 0.32,
             "positive": ["2", 0],
             "negative": ["5", 0],
             "model": ["4", 0],
@@ -129,7 +129,7 @@ class TestBuildWorkflow:
 
     def test_injects_prompt_into_text_node(self, adapter):
         workflow = adapter._build_workflow("test.png", prompt="retro 16-bit pixel art")
-        assert workflow["2"]["inputs"]["text"] == "retro 16-bit pixel art"
+        assert workflow["2"]["inputs"]["text"] == "pixel art, clean edges, limited palette, retro 16-bit pixel art"
 
     def test_does_not_mutate_template(self, adapter):
         original_image = adapter._workflow_template["1"]["inputs"]["image"]

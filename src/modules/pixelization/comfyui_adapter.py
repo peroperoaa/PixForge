@@ -22,8 +22,12 @@ class ComfyUIAdapter(BasePixelization):
 
     # Default node IDs in the workflow template (can be overridden)
     NODE_LOAD_IMAGE = "1"
+    NODE_POSITIVE_PROMPT = "2"
     NODE_KSAMPLER = "3"
     NODE_SAVE_IMAGE = "9"
+
+    # Pixel-art prefix prepended to every upstream prompt
+    PIXEL_ART_PREFIX = "pixel art, clean edges, limited palette, "
 
     def __init__(
         self,
@@ -81,13 +85,10 @@ class ComfyUIAdapter(BasePixelization):
             if denoising_strength is not None:
                 ksampler["denoise"] = denoising_strength
             if prompt is not None:
-                # If there's a positive prompt text node linked, we update it
-                # Look for a CLIPTextEncode node that feeds into the KSampler positive input
-                positive_ref = ksampler.get("positive")
-                if isinstance(positive_ref, list) and len(positive_ref) >= 1:
-                    positive_node_id = str(positive_ref[0])
-                    if positive_node_id in workflow:
-                        workflow[positive_node_id]["inputs"]["text"] = prompt
+                # Prepend pixel-art prefix and inject into positive text node
+                prefixed_prompt = self.PIXEL_ART_PREFIX + prompt
+                if self.NODE_POSITIVE_PROMPT in workflow:
+                    workflow[self.NODE_POSITIVE_PROMPT]["inputs"]["text"] = prefixed_prompt
 
         return workflow
 

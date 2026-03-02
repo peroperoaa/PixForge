@@ -2,9 +2,7 @@
 
 ## Failing Tests Created
 
-- FR-1: PreProcessing Schema Definitions - `docs/scenario/pre_processing_schemas.md` - `tests/modules/pre_processing/test_schemas.py`
-- FR-2: PreProcessor Process Pipeline - `docs/scenario/pre_processing_pipeline.md` - `tests/modules/pre_processing/test_pipeline.py`
-- FR-3: Subject-Aware Cropping - `docs/scenario/pre_processing_cropping.md` - `tests/modules/pre_processing/test_cropping.py`
-- FR-4: PreProcessing Exceptions - `docs/scenario/pre_processing_exceptions.md` - `tests/modules/pre_processing/test_exceptions.py`
+- FR-1: Workflow Template Parameter Optimization - `docs/scenario/workflow_template_params.md` - `tests/scenario/test_workflow_template_params.py`
+- FR-2: Dynamic Prompt Injection with Pixel-Art Prefix - `docs/scenario/dynamic_prompt_injection.md` - `tests/scenario/test_dynamic_prompt_injection.py`
 
-All 25 tests fail with ModuleNotFoundError (expected - module not yet implemented).
+All 6 new tests fail as expected (RED). 1 test (no_prompt_keeps_template_default) passes because template text stays as-is when prompt is None — this is expected once the template placeholder is in place, but currently it passes because the current code also doesn't change text when prompt is None. The test for that case still validates the new `{prompt}` placeholder value, which will be covered by the template update.

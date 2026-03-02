@@ -8,7 +8,7 @@
   "2": {
     "class_type": "CLIPTextEncode",
     "inputs": {
-      "text": "pixel art, 16-bit style, clean edges, retro game asset, top-down view",
+      "text": "{prompt}",
       "clip": ["11", 1]
     }
   },
@@ -20,7 +20,7 @@
       "cfg": 7.0,
       "sampler_name": "euler",
       "scheduler": "normal",
-      "denoise": 0.55,
+      "denoise": 0.32,
       "model": ["11", 0],
       "positive": ["10", 0],
       "negative": ["5", 0],
@@ -36,7 +36,7 @@
   "5": {
     "class_type": "CLIPTextEncode",
     "inputs": {
-      "text": "blurry, smooth, anti-aliased, photorealistic, 3d render, noise, artifacts",
+      "text": "blurry, smooth, anti-aliased, photorealistic, 3d render, noise, artifacts, deformed, bad anatomy, extra limbs, mutation",
       "clip": ["11", 1]
     }
   },
@@ -73,7 +73,7 @@
       "conditioning": ["2", 0],
       "control_net": ["8", 0],
       "image": ["1", 0],
-      "strength": 0.85
+      "strength": 0.65
     }
   },
   "11": {

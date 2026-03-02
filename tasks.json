@@ -132,7 +132,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Fix Post-Processing Pipeline Order: Downscale Before Quantize",
