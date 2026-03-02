@@ -46,10 +46,15 @@ class GeminiImageAdapter(BaseImageGenerator):
 
             for part in parts:
                 if hasattr(part, 'inline_data') and part.inline_data:
-                    # Attempt to get PIL image directly if method exists (as per user script)
+                    # Attempt to get PIL image directly if method exists
                     if hasattr(part, 'as_image'):
-                        generated_image = part.as_image()
-                    # Fallback to reading bytes if available
+                        sdk_image = part.as_image()
+                        # The SDK's as_image() returns a google.genai.types.Image wrapper, NOT a PIL Image.
+                        # It has .image_bytes but .save() does not accept 'format'.
+                        # We convert it to a real PIL Image for consistency and validation.
+                        if hasattr(sdk_image, 'image_bytes'):
+                            generated_image = Image.open(io.BytesIO(sdk_image.image_bytes))
+                    # Fallback to reading bytes if available directly
                     elif hasattr(part.inline_data, 'data'):
                         img_bytes = part.inline_data.data
                         generated_image = Image.open(io.BytesIO(img_bytes))

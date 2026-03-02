@@ -20,14 +20,10 @@ def test_config_priority():
         assert config_manager.get_api_key() == 'runtime_key'
         
         # Priority 2: Runtime (missing) > File > Env
-        # Note: Since we are mocking everything to be valid, this test is slightly less effective for priority 
-        # unless we vary the values. But we must enforce valid model.
         assert config_manager.get_model() == 'gemini-3.1-pro-preview'
 
 def test_config_priority_values():
     # Setup - vary values to test priority, but ensure the "winner" is valid
-    # Since we validate the result, the lower priority ones can be invalid if they are shadowed?
-    # Actually ConfigManager only checks the winner.
     
     runtime_args = {'gemini_model': 'gemini-3.1-pro-preview'}
     file_content = '{"gemini_model": "invalid-model"}'

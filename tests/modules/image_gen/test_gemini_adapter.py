@@ -33,7 +33,11 @@ def test_generate_success(mock_config_manager, tmp_path):
         # Mock the generation response
         mock_part = MagicMock()
         mock_part.inline_data = True
-        mock_part.as_image.return_value = MagicMock() # Mock PIL Image
+        
+        # Mock the SDK Image object returned by as_image()
+        mock_sdk_image = MagicMock()
+        mock_sdk_image.image_bytes = b"fake_image_bytes"
+        mock_part.as_image.return_value = mock_sdk_image 
         
         mock_response = MagicMock()
         mock_response.parts = [mock_part]
@@ -70,6 +74,7 @@ def test_generate_api_error(mock_config_manager):
 
 def test_generate_save_success(mock_config_manager, tmp_path):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client_class, \
+         patch('src.modules.image_gen.gemini_adapter.Image.open') as mock_image_open, \
          patch('src.modules.image_gen.gemini_adapter.uuid.uuid4') as mock_uuid, \
          patch('src.modules.image_gen.gemini_adapter.os.makedirs') as mock_makedirs:
         
@@ -81,12 +86,19 @@ def test_generate_save_success(mock_config_manager, tmp_path):
         
         mock_part = MagicMock()
         mock_part.inline_data = True
-        mock_part.as_image.return_value = mock_pil_image
+        
+        # Mock SDK Image
+        mock_sdk_image = MagicMock()
+        mock_sdk_image.image_bytes = b"fake_image_bytes"
+        mock_part.as_image.return_value = mock_sdk_image
         
         mock_response = MagicMock()
         mock_response.parts = [mock_part]
         
         mock_client_instance.models.generate_content.return_value = mock_response
+        
+        # When Image.open is called with the bytes, return our mock_pil_image
+        mock_image_open.return_value = mock_pil_image
         
         # Mock UUID for predictable filename
         mock_uuid.return_value = "1234-5678"

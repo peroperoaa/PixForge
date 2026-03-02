@@ -59,8 +59,8 @@ class ConfigManager:
         if not model:
             return "gemini-3.1-pro-preview"
         
-        if model != "gemini-3.1-pro-preview":
-            raise ValueError("Invalid model version. Only 'gemini-3.1-pro-preview' is supported.")
+        if not model.startswith("gemini-3"):
+             raise ValueError(f"Invalid model version: {model}. Only Gemini 3 series models are supported.")
             
         return model
     def get_image_model(self) -> str:
