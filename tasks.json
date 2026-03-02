@@ -178,7 +178,7 @@
         "tdd-workflow",
         "testing-safe-protocol"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Integrate Pre-Processing into Orchestrator",

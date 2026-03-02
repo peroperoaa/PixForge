@@ -26,7 +26,6 @@ class TestPipelinePalettePresetUnit:
 
         with (
             patch("src.modules.post_processing.pipeline.Image") as MockImage,
-            patch("src.modules.post_processing.pipeline.BackgroundRemover") as MockBR,
             patch("src.modules.post_processing.pipeline.ColorQuantizer") as MockCQ,
             patch("src.modules.post_processing.pipeline.Downscaler") as MockDS,
             patch("src.modules.post_processing.pipeline.PaletteLoader") as MockPL,
@@ -56,7 +55,7 @@ class TestPipelinePalettePresetUnit:
             # ColorQuantizer.quantize receives the palette from get_preset
             MockCQ.return_value.quantize.assert_called_once()
             call_kwargs = MockCQ.return_value.quantize.call_args
-            assert call_kwargs[1].get("palette") is fake_palette or call_kwargs[0][0] is original_img
+            assert call_kwargs[1].get("palette") is fake_palette or call_kwargs[0][0] is downscaled_img
 
     def test_palette_name_equals_preset_name(self, output_dir):
         """PostProcessingOutput.palette_name equals the preset name when palette_preset is used."""
@@ -67,7 +66,6 @@ class TestPipelinePalettePresetUnit:
 
         with (
             patch("src.modules.post_processing.pipeline.Image") as MockImage,
-            patch("src.modules.post_processing.pipeline.BackgroundRemover"),
             patch("src.modules.post_processing.pipeline.ColorQuantizer") as MockCQ,
             patch("src.modules.post_processing.pipeline.Downscaler") as MockDS,
             patch("src.modules.post_processing.pipeline.PaletteLoader") as MockPL,
@@ -102,7 +100,6 @@ class TestPipelinePalettePresetUnit:
 
         with (
             patch("src.modules.post_processing.pipeline.Image") as MockImage,
-            patch("src.modules.post_processing.pipeline.BackgroundRemover"),
             patch("src.modules.post_processing.pipeline.ColorQuantizer") as MockCQ,
             patch("src.modules.post_processing.pipeline.Downscaler") as MockDS,
             patch("src.modules.post_processing.pipeline.PaletteLoader") as MockPL,
@@ -137,7 +134,6 @@ class TestPipelinePalettePresetUnit:
 
         with (
             patch("src.modules.post_processing.pipeline.Image") as MockImage,
-            patch("src.modules.post_processing.pipeline.BackgroundRemover"),
             patch("src.modules.post_processing.pipeline.ColorQuantizer") as MockCQ,
             patch("src.modules.post_processing.pipeline.Downscaler") as MockDS,
             patch("src.modules.post_processing.pipeline.PaletteLoader") as MockPL,
