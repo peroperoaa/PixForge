@@ -5,3 +5,5 @@ pytest
 pytest-mock
 Pillow
 Pillow>=10.0.0
+requests
+websocket-client

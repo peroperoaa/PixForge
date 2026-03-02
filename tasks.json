@@ -505,7 +505,7 @@
         "tdd-workflow",
         "systematic-debugging"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Implement ComfyUI Adapter Control Logic",
