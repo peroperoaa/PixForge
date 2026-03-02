@@ -192,3 +192,155 @@ def test_comfyui_workflow_template_from_env():
         
         config_manager = ConfigManager(runtime_config=runtime_args)
         assert config_manager.get_comfyui_workflow_template() == 'custom_workflow.json'
+
+
+# ===== Post-Processing Configuration Tests =====
+
+# Scenario: get_post_processing_output_dir
+def test_post_processing_output_dir_default():
+    """Returns './output/assets' when no config is set."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_post_processing_output_dir() == './output/assets'
+
+def test_post_processing_output_dir_runtime_override():
+    """Returns runtime override value when provided."""
+    runtime_args = {'post_processing_output_dir': '/custom/path'}
+    file_content = '{}'
+    env_vars = {'POST_PROCESSING_OUTPUT_DIR': '/env/path'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_post_processing_output_dir() == '/custom/path'
+
+def test_post_processing_output_dir_from_env():
+    """Returns value from env when no runtime config."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'POST_PROCESSING_OUTPUT_DIR': '/env/path'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_post_processing_output_dir() == '/env/path'
+
+
+# Scenario: get_default_color_count
+def test_default_color_count_default():
+    """Returns 16 when no config is set."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_color_count() == 16
+
+def test_default_color_count_from_env_string():
+    """Returns integer from environment variable string."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'DEFAULT_COLOR_COUNT': '32'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_color_count() == 32
+
+def test_default_color_count_runtime_override():
+    """Runtime arg overrides env variable."""
+    runtime_args = {'default_color_count': 64}
+    file_content = '{}'
+    env_vars = {'DEFAULT_COLOR_COUNT': '32'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_color_count() == 64
+
+
+# Scenario: get_default_target_sizes
+def test_default_target_sizes_default():
+    """Returns [32, 64] when no config is set."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_target_sizes() == [32, 64]
+
+def test_default_target_sizes_from_env_string():
+    """Parses comma-separated env string '32,64,128' into int list."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'DEFAULT_TARGET_SIZES': '32,64,128'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_target_sizes() == [32, 64, 128]
+
+def test_default_target_sizes_runtime_override():
+    """Runtime arg overrides env variable."""
+    runtime_args = {'default_target_sizes': [16, 32, 64, 128]}
+    file_content = '{}'
+    env_vars = {'DEFAULT_TARGET_SIZES': '32,64'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_default_target_sizes() == [16, 32, 64, 128]
+
+# Scenario: get_rembg_model
+def test_rembg_model_default():
+    """Returns 'u2net' when no config is set."""
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_rembg_model() == 'u2net'
+
+def test_rembg_model_runtime_override():
+    """Runtime arg overrides env variable."""
+    runtime_args = {'rembg_model': 'isnet-general-use'}
+    file_content = '{}'
+    env_vars = {'REMBG_MODEL': 'u2net'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_rembg_model() == 'isnet-general-use'

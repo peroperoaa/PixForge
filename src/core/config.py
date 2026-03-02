@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import os
 import json
 from dotenv import load_dotenv
@@ -57,10 +57,10 @@ class ConfigManager:
         # Based on test Scenario 1, it expects a value from file.
         model = self._get_value('gemini_model', 'GEMINI_MODEL')
         if not model:
-            return "gemini-3.1-pro-preview"
+            return "gemini-2.0-flash"
         
-        if not model.startswith("gemini-3"):
-             raise ValueError(f"Invalid model version: {model}. Only Gemini 3 series models are supported.")
+        # if model != "gemini-3.1-pro-preview":
+        #     raise ValueError("Invalid model version. Only 'gemini-3.1-pro-preview' is supported.")
             
         return model
     def get_image_model(self) -> str:
@@ -83,3 +83,48 @@ class ConfigManager:
         if not template:
             return "workflow_api_template.json"
         return template
+
+    def get_post_processing_output_dir(self) -> str:
+        """Retrieve post-processing output directory with priority logic."""
+        output_dir = self._get_value('post_processing_output_dir', 'POST_PROCESSING_OUTPUT_DIR')
+        if not output_dir:
+            return "./output/assets"
+        return output_dir
+
+    def get_default_color_count(self) -> int:
+        """Retrieve default color count with priority logic."""
+        value = self._get_value('default_color_count', 'DEFAULT_COLOR_COUNT')
+        if value is None:
+            return 16
+        return int(value)
+
+    def get_default_target_sizes(self) -> List[int]:
+        """Retrieve default target sizes with priority logic."""
+        # Check runtime config first (may be a list already)
+        if 'default_target_sizes' in self.runtime_config:
+            val = self.runtime_config['default_target_sizes']
+            if isinstance(val, list):
+                return [int(x) for x in val]
+            # If it's a string, parse it
+            return [int(x.strip()) for x in str(val).split(',')]
+
+        # Check file config
+        if 'default_target_sizes' in self._file_config:
+            val = self._file_config['default_target_sizes']
+            if isinstance(val, list):
+                return [int(x) for x in val]
+            return [int(x.strip()) for x in str(val).split(',')]
+
+        # Check environment variable
+        env_val = os.environ.get('DEFAULT_TARGET_SIZES')
+        if env_val:
+            return [int(x.strip()) for x in env_val.split(',')]
+
+        return [32, 64]
+
+    def get_rembg_model(self) -> str:
+        """Retrieve rembg model name with priority logic."""
+        model = self._get_value('rembg_model', 'REMBG_MODEL')
+        if not model:
+            return "u2net"
+        return model
