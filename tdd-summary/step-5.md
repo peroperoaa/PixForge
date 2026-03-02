@@ -3,6 +3,6 @@
 ## Refactorings Completed
 
 - Implementation is already minimal and clean. No refactoring needed.
-- Code follows existing project patterns (Pydantic models, IntEnum for ordering).
+- Code uses clear method separation (scan vs detect), type hints, and docstrings.
 
-All 30 tests still pass after review. Scenario documents updated.
+All 18 tests still pass after review. Scenario documents updated.

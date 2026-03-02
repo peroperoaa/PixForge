@@ -2,23 +2,21 @@
 
 ## Functional Requirements
 
-### FR-1: PipelineStage enum with ordering
-PipelineStage enum must have exactly 4 members in execution order: PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING. The enum must support ordering comparison operators (<, >, <=, >=).
+### FR-1: Scan output directory for existing artifacts
+ArtifactDetector must scan `output/images/` and `output/assets/` directories to identify existing pipeline artifacts. Files matching `*pixelized*` pattern belong to PIXELIZATION stage, other image files belong to IMAGE stage, and files in `output/assets/` belong to POST_PROCESSING stage.
 
-### FR-2: FullPipelineConfig model with defaults and cross-field validation
-FullPipelineConfig Pydantic model with fields: user_prompt, input_image_path, start_stage, aspect_ratio, palette_preset, color_count, target_sizes, remove_background, asset_name, output_dir. Default values: start_stage=PROMPT, palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True. Cross-field validators: user_prompt required when start_stage=PROMPT; input_image_path required when start_stage > PROMPT (IMAGE, PIXELIZATION, POST_PROCESSING).
+### FR-2: Detect recommended start stage
+`detect_start_stage` method must return a tuple of `(PipelineStage, Optional[Path])` representing the recommended NEXT stage and the path to the latest relevant artifact. When multiple artifacts exist in the same stage, the latest file by modification time is chosen.
 
-### FR-3: StageResult model
-StageResult Pydantic model with fields: stage (PipelineStage), success (bool), output_path (Optional[str]), error_message (Optional[str]), duration_seconds (float).
-
-### FR-4: FullPipelineResult model
-FullPipelineResult Pydantic model with fields: stage_results (list[StageResult]), final_asset_paths (list[str]), total_duration_seconds (float).
+### FR-3: Handle empty/missing directories
+When no artifacts exist (empty directories or missing directories), `detect_start_stage` returns `(PipelineStage.PROMPT, None)`. When only final assets exist (nothing to skip to), also returns `(PipelineStage.PROMPT, None)`.
 
 ## Assumptions
 
-- PipelineStage enum uses IntEnum (or similar) to support natural ordering via integer values.
-- user_prompt is Optional[str] with default None; required only when start_stage == PROMPT.
-- input_image_path is Optional[str] with default None; required only when start_stage > PROMPT.
-- aspect_ratio defaults to "1:1" following ImageGenInput pattern.
-- color_count is Optional[int] with default None.
-- asset_name and output_dir are Optional[str] with default None.
+- Image file extensions include common formats: `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`.
+- The `*pixelized*` pattern is case-insensitive matching on the filename (stem).
+- "Latest file" is determined by filesystem modification time (`os.path.getmtime` or `Path.stat().st_mtime`).
+- The detector takes the output directory path as a constructor parameter.
+- When pixelized images exist, we recommend POST_PROCESSING as the next stage (with the pixelized image path).
+- When non-pixelized images exist (but no pixelized ones), we recommend PIXELIZATION as the next stage (with the image path).
+- When only assets exist, there's nothing useful to skip to, so we return PROMPT.

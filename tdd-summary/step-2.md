@@ -2,7 +2,6 @@
 
 ## Scenario Documents Created
 
-- FR-1: PipelineStage enum with ordering - `docs/scenario/full_pipeline_stage_enum.md`
-- FR-2: FullPipelineConfig model with defaults and validation - `docs/scenario/full_pipeline_config.md`
-- FR-3: StageResult model - `docs/scenario/full_pipeline_stage_result.md`
-- FR-4: FullPipelineResult model - `docs/scenario/full_pipeline_result.md`
+- FR-1: Scan output directory for artifacts - `docs/scenario/artifact_detector_scan.md`
+- FR-2: Detect recommended start stage - `docs/scenario/artifact_detector_detect.md`
+- FR-3: Handle edge cases - `docs/scenario/artifact_detector_edge_cases.md`

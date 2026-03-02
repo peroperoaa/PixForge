@@ -2,9 +2,8 @@
 
 ## Failing Tests Created
 
-- FR-1: PipelineStage enum with ordering - `docs/scenario/full_pipeline_stage_enum.md` - `tests/modules/full_pipeline/test_stage_enum.py`
-- FR-2: FullPipelineConfig model - `docs/scenario/full_pipeline_config.md` - `tests/modules/full_pipeline/test_config.py`
-- FR-3: StageResult model - `docs/scenario/full_pipeline_stage_result.md` - `tests/modules/full_pipeline/test_stage_result.py`
-- FR-4: FullPipelineResult model - `docs/scenario/full_pipeline_result.md` - `tests/modules/full_pipeline/test_pipeline_result.py`
+- FR-1: Scan output directory - `docs/scenario/artifact_detector_scan.md` - `tests/modules/full_pipeline/test_artifact_detector_scan.py`
+- FR-2: Detect start stage - `docs/scenario/artifact_detector_detect.md` - `tests/modules/full_pipeline/test_artifact_detector_detect.py`
+- FR-3: Edge cases - `docs/scenario/artifact_detector_edge_cases.md` - `tests/modules/full_pipeline/test_artifact_detector_edge_cases.py`
 
-All tests confirmed failing (RED) with ModuleNotFoundError: No module named 'src.modules.full_pipeline'.
+All tests confirmed failing (RED) with ModuleNotFoundError: No module named 'src.modules.full_pipeline.artifact_detector'.
