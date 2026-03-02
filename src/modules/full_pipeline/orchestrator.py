@@ -20,6 +20,8 @@ from src.modules.pixelization.interface import BasePixelization
 from src.modules.pixelization.schemas import PixelizationInput
 from src.modules.post_processing.interface import BasePostProcessor
 from src.modules.post_processing.schemas import PostProcessingInput
+from src.modules.pre_processing.interface import BasePreProcessor
+from src.modules.pre_processing.schemas import PreProcessingInput
 
 
 class FullPipeline:
@@ -38,12 +40,14 @@ class FullPipeline:
         image_generator: BaseImageGenerator,
         pixelizer: BasePixelization,
         post_processor: BasePostProcessor,
+        pre_processor: Optional[BasePreProcessor] = None,
     ) -> None:
         self._config_manager = config_manager
         self._prompt_generator = prompt_generator
         self._image_generator = image_generator
         self._pixelizer = pixelizer
         self._post_processor = post_processor
+        self._pre_processor = pre_processor
 
     def run(self, config: FullPipelineConfig) -> FullPipelineResult:
         """Execute the pipeline according to configuration.
@@ -88,6 +92,13 @@ class FullPipeline:
                     result_output = self._run_image(prompt_text, config)
                     current_image_path = result_output.image_path
                     output_path = result_output.image_path
+
+                    # Run pre-processing between IMAGE and PIXELIZATION
+                    if self._pre_processor is not None:
+                        pre_output = self._run_pre_processing(
+                            current_image_path, config
+                        )
+                        current_image_path = pre_output.image_path
 
                 elif stage == PipelineStage.PIXELIZATION:
                     assert current_image_path is not None
@@ -174,16 +185,29 @@ class FullPipeline:
         )
         return self._pixelizer.generate(pix_input)
 
+    def _run_pre_processing(self, image_path: str, config: FullPipelineConfig):
+        """Execute pre-processing between IMAGE and PIXELIZATION stages."""
+        pre_input = PreProcessingInput(
+            image_path=image_path,
+            remove_background=config.remove_background,
+            intermediate_size=config.intermediate_size,
+            output_dir=config.output_dir,
+        )
+        return self._pre_processor.process(pre_input)
+
     def _run_post_processing(self, image_path: str, config: FullPipelineConfig):
         """Execute the POST_PROCESSING stage."""
         output_dir = config.output_dir or self._config_manager.get_post_processing_output_dir()
         asset_name = config.asset_name or "output"
 
+        # Disable remove_background in post-processing when pre-processor handled it
+        remove_bg = False if self._pre_processor is not None else config.remove_background
+
         pp_input = PostProcessingInput(
             image_path=image_path,
             asset_name=asset_name,
             target_sizes=config.target_sizes,
-            remove_background=config.remove_background,
+            remove_background=remove_bg,
             color_count=config.color_count,
             palette_preset=config.palette_preset,
             output_dir=output_dir,

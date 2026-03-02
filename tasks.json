@@ -230,7 +230,7 @@
         "tdd-workflow",
         "systematic-debugging"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Verify Optimized Pipeline End-to-End",

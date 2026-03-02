@@ -20,6 +20,7 @@ class FullPipelineConfig(BaseModel):
     color_count: Optional[int] = None
     target_sizes: list[int] = [32, 64]
     remove_background: bool = True
+    intermediate_size: int = 256
     asset_name: Optional[str] = None
     output_dir: Optional[str] = None
 
