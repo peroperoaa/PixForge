@@ -69,3 +69,17 @@ class ConfigManager:
         if not model:
             return "gemini-3.1-flash-image-preview"
         return model
+
+    def get_comfyui_url(self) -> str:
+        """Retrieve ComfyUI URL with priority logic."""
+        url = self._get_value('comfyui_url', 'COMFYUI_URL')
+        if not url:
+            return "http://127.0.0.1:8188"
+        return url
+
+    def get_comfyui_workflow_template(self) -> str:
+        """Retrieve ComfyUI workflow template path with priority logic."""
+        template = self._get_value('comfyui_workflow_template', 'COMFYUI_WORKFLOW_TEMPLATE')
+        if not template:
+            return "workflow_api_template.json"
+        return template

@@ -130,3 +130,65 @@ def test_image_model_default():
         
         config_manager = ConfigManager(runtime_config=runtime_args)
         assert config_manager.get_image_model() == 'gemini-3.1-flash-image-preview'
+
+# Scenario: ComfyUI URL configuration
+def test_comfyui_url_default():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_comfyui_url() == 'http://127.0.0.1:8188'
+
+def test_comfyui_url_from_env():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'COMFYUI_URL': 'http://192.168.1.100:8188'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_comfyui_url() == 'http://192.168.1.100:8188'
+
+def test_comfyui_url_runtime_override():
+    runtime_args = {'comfyui_url': 'http://localhost:9000'}
+    file_content = '{}'
+    env_vars = {'COMFYUI_URL': 'http://192.168.1.100:8188'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_comfyui_url() == 'http://localhost:9000'
+
+# Scenario: ComfyUI workflow template configuration
+def test_comfyui_workflow_template_default():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars, clear=True):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_comfyui_workflow_template() == 'workflow_api_template.json'
+
+def test_comfyui_workflow_template_from_env():
+    runtime_args = {}
+    file_content = '{}'
+    env_vars = {'COMFYUI_WORKFLOW_TEMPLATE': 'custom_workflow.json'}
+    
+    with patch('builtins.open', mock_open(read_data=file_content)), \
+         patch('os.path.exists', return_value=True), \
+         patch.dict(os.environ, env_vars):
+        
+        config_manager = ConfigManager(runtime_config=runtime_args)
+        assert config_manager.get_comfyui_workflow_template() == 'custom_workflow.json'
