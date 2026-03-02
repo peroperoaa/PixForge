@@ -26,7 +26,7 @@ class PostProcessingPipeline(BasePostProcessor):
         Steps executed based on input configuration:
         1. Load source image
         2. Remove background (if remove_background=True)
-        3. Quantize colors (if color_count or palette_path is provided)
+        3. Quantize colors (if color_count, palette_path, or palette_preset is provided)
         4. Downscale to each target size and save
 
         Args:
@@ -43,9 +43,11 @@ class PostProcessingPipeline(BasePostProcessor):
             image = self._background_remover.remove(image)
 
         # Step 2: Color quantization
-        if input_data.color_count is not None or input_data.palette_path is not None:
+        if input_data.color_count is not None or input_data.palette_path is not None or input_data.palette_preset is not None:
             palette = None
-            if input_data.palette_path is not None:
+            if input_data.palette_preset is not None:
+                palette = PaletteLoader.get_preset(input_data.palette_preset)
+            elif input_data.palette_path is not None:
                 palette = PaletteLoader.load_from_hex_file(input_data.palette_path)
             image = self._color_quantizer.quantize(
                 image, color_count=input_data.color_count, palette=palette
@@ -64,9 +66,11 @@ class PostProcessingPipeline(BasePostProcessor):
             resized.save(filepath)
             output_paths.append(filepath)
 
-        # Derive palette name from filename if palette_path was used
+        # Derive palette name from preset name or filename
         palette_name = None
-        if input_data.palette_path is not None:
+        if input_data.palette_preset is not None:
+            palette_name = input_data.palette_preset
+        elif input_data.palette_path is not None:
             palette_name = os.path.splitext(
                 os.path.basename(input_data.palette_path)
             )[0]

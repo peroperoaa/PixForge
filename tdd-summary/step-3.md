@@ -2,7 +2,8 @@
 
 ## Failing Tests Created
 
-- FR-1: Downscale Single Image - `docs/scenario/downscaler_single.md` - `tests/modules/post_processing/test_downscaler.py::TestDownscaleSingle` (7 tests)
-- FR-2: Downscale Multiple Sizes - `docs/scenario/downscaler_multi.md` - `tests/modules/post_processing/test_downscaler.py::TestDownscaleMulti` (1 test)
+- FR-1 & FR-2: Schema palette_preset field + mutual exclusion - `docs/scenario/post_processing_palette_preset_schema.md` - `tests/modules/post_processing/test_palette_preset_schema.py`
+- FR-3: Pipeline resolves palette_preset - `docs/scenario/post_processing_palette_preset_pipeline.md` - `tests/modules/post_processing/test_palette_preset_pipeline.py`
+- FR-4: Integration end-to-end - `docs/scenario/post_processing_palette_preset_integration.md` - `tests/modules/post_processing/test_palette_preset_integration.py`
 
-All 8 tests fail with ModuleNotFoundError (downscaler module does not exist yet).
+All 9 tests confirmed failing (RED).

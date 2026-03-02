@@ -1,16 +1,21 @@
-# Step 1 - Understand Intent (Nearest Neighbor Downscaler)
+# Step 1 - Understand Intent
 
 ## Functional Requirements
 
-### FR-1: Downscale Single Image
-Downscaler.downscale accepts a PIL Image and an integer target size, and returns a square image of exactly target_size × target_size pixels using PIL NEAREST resampling. Non-square source images are handled (center-crop to square before scaling). RGBA mode is preserved. Raises DownscaleError for invalid target sizes (0 or negative).
+### FR-1: Add palette_preset field to PostProcessingInput
+PostProcessingInput should accept an Optional[str] `palette_preset` field that names a built-in palette preset (e.g. 'sweetie-16').
 
-### FR-2: Downscale Multiple Sizes
-Downscaler.downscale_multi accepts a PIL Image and a list of integer target sizes, and returns a list of images each resized to the corresponding target size. The returned list length matches the input list length.
+### FR-2: Mutual exclusion of palette_preset and palette_path
+If both `palette_preset` and `palette_path` are set simultaneously, PostProcessingInput must raise a ValueError via a model-level validator.
+
+### FR-3: Pipeline resolves palette_preset before quantization
+PostProcessingPipeline.process must resolve `palette_preset` via `PaletteLoader.get_preset()` to obtain the actual palette, then pass it to `ColorQuantizer.quantize()`.
+
+### FR-4: PostProcessingOutput.palette_name reflects preset name
+When `palette_preset` is used, `PostProcessingOutput.palette_name` should equal the preset name string (not a file path basename).
 
 ## Assumptions
 
-- "Target size" is a single integer meaning both width and height (square output).
-- Non-square source images are center-cropped to the largest inscribed square before downscaling.
-- Target size larger than source is allowed (upscale with NEAREST).
-- Image mode (RGB, RGBA, etc.) is preserved through the operation.
+- The `palette_preset` field accepts any string that `PaletteLoader.get_preset()` can resolve. Invalid preset names will raise ValueError at pipeline runtime, not at schema validation.
+- When `palette_preset` is set, quantization is triggered even if `color_count` is None.
+- The existing behavior for `palette_path` and `color_count` remains unchanged.

@@ -42,7 +42,7 @@
         "tdd-workflow",
         "testing-safe-protocol"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Define Full Pipeline Schemas and Stage Enum",
