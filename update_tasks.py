@@ -55,7 +55,7 @@ new_tasks = [
     "acceptance-criteria": "ConfigManager returns valid ComfyUI endpoint URLs and template file paths.",
     "test-plan": {
       "unit": [
-        "get_comfyui_url defaults to http://127.0.0.1:8188 if none provided",
+        "get_comfyui_url defaults to http://127.0.0.1:8000 if none provided",
         "Runtime arguments override environment variables for comfyui_url"
       ],
       "integration": [],
