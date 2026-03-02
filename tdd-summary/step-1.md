@@ -1,4 +1,4 @@
-# Step 1 - Understand Intent
+# Step 1 - Understand Intent (Color Quantizer)
 
 ## Functional Requirements
 

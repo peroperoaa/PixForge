@@ -796,7 +796,7 @@
         "tdd-workflow",
         "systematic-debugging"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Implement Nearest Neighbor Downscaler",
