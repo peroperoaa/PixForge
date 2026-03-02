@@ -2,6 +2,7 @@
 
 ## Scenario Documents Created
 
-- FR-1: Pixel-Art System Instruction - `docs/scenario/pixel_art_system_instruction.md`
-- FR-2: Pixel-Art Style Parameters Documentation - `docs/scenario/pixel_art_style_parameters.md`
-- FR-3: Unit Tests Verify Pixel-Art System Instruction - `docs/scenario/pixel_art_test_verification.md`
+- FR-1: PreProcessing Schema Definitions - `docs/scenario/pre_processing_schemas.md`
+- FR-2: PreProcessor Process Pipeline - `docs/scenario/pre_processing_pipeline.md`
+- FR-3: Subject-Aware Cropping - `docs/scenario/pre_processing_cropping.md`
+- FR-4: PreProcessing Exceptions - `docs/scenario/pre_processing_exceptions.md`

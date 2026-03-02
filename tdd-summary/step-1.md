@@ -2,18 +2,22 @@
 
 ## Functional Requirements
 
-### FR-1: Pixel-Art-Optimized System Instruction
-Update the `GeminiAdapter._construct_request` system_instruction to constrain generated prompts for pixel-art-friendly compositions. The system instruction must mention: centered subject, simple/transparent background, clear outlines, front or 3/4 view, and limited detail suitable for pixel art.
+### FR-1: PreProcessing Schema Definitions
+Define PreProcessingInput and PreProcessingOutput Pydantic schemas with proper validation. PreProcessingInput includes image_path (str), remove_background (bool, default False), intermediate_size (int, default 256), crop_mode (str, default "auto"). PreProcessingOutput includes image_path (str), original_size (tuple[int,int]), intermediate_size (int).
 
-### FR-2: PromptOutput style_parameters Schema Documentation for Pixel Art
-Update the `PromptOutput.style_parameters` field description/documentation to include pixel-art constraint guidance (e.g., expected keys like `view_angle`, `background_type`, `outline_style`).
+### FR-2: PreProcessor Process Pipeline
+Implement PreProcessor.process() method that loads a high-res image, optionally removes background, crops to square, downscales to intermediate_size using LANCZOS resampling, saves and returns the result path.
 
-### FR-3: Unit Tests Verify New System Instruction Content
-Update existing unit tests to verify the new system instruction contains pixel-art-specific keywords: 'centered', 'simple background' or 'transparent background', 'clear outlines', 'front view' or '3/4 view'.
+### FR-3: Subject-Aware Cropping
+Implement subject-aware cropping: when the image has an alpha channel, use the alpha bounding box to center the subject in a square crop. Fallback to center crop when no alpha channel is available.
+
+### FR-4: PreProcessing Exceptions
+Define proper exception hierarchy for the pre-processing module: PreProcessingError (base), BackgroundRemovalError, CropError, DownscaleError.
 
 ## Assumptions
 
-- We are updating the existing system_instruction string in `GeminiAdapter._construct_request`, not adding a new method.
-- The pixel-art constraints are additive guidance within the system instruction—the model still generates positive_prompt, negative_prompt, and style_parameters in JSON.
-- "Generated PromptOutput.positive_prompt includes pixel-art-friendly directives" means the system instruction instructs the model to embed such directives in the positive_prompt output, not that we hardcode them in code.
-- Existing tests that check for `"You are an expert prompt engineer"` will need updating to match the new instruction text.
+- The pre-processing module reuses the rembg-based background removal approach from post_processing (mocked in tests).
+- crop_mode "auto" means: use alpha bounding box if available, fallback to center crop.
+- crop_mode "center" means: always use center crop regardless of alpha channel.
+- The output image is always saved as PNG.
+- LANCZOS resampling is used (not NEAREST like post_processing) because this is an intermediate step before pixelization where smooth downscale is desired.

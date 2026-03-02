@@ -2,8 +2,9 @@
 
 ## Refactorings Completed
 
-- FR-1: Pixel-Art System Instruction - `docs/scenario/pixel_art_system_instruction.md` - Extracted system_instruction from a local variable in `_construct_request` to a class constant `SYSTEM_INSTRUCTION` on `GeminiAdapter` for better visibility and reusability.
-- FR-2: Pixel-Art Style Parameters Documentation - No refactoring needed, the multi-line Field description is already clean.
-- FR-3: Unit Tests Verify Pixel-Art System Instruction - No refactoring needed, test updates are minimal.
+- FR-1: PreProcessing Schema Definitions - `docs/scenario/pre_processing_schemas.md` - No changes needed, code is clean
+- FR-2: PreProcessor Process Pipeline - `docs/scenario/pre_processing_pipeline.md` - Removed unused variable in _crop_square, simplified else branch
+- FR-3: Subject-Aware Cropping - `docs/scenario/pre_processing_cropping.md` - No changes needed, well-structured static methods
+- FR-4: PreProcessing Exceptions - `docs/scenario/pre_processing_exceptions.md` - No changes needed, minimal and clean
 
-All tests still pass after refactoring. Scenario documents updated.
+All 26 tests still pass after refactoring. Scenario documents updated.

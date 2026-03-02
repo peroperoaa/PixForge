@@ -3,22 +3,31 @@
 ## Summary
 
 - Functional requirements addressed:
-    - FR-1: Pixel-Art-Optimized System Instruction — Updated `GeminiAdapter.SYSTEM_INSTRUCTION` to constrain prompts for pixel-art compositions (centered, simple/transparent background, clear outlines, front/3/4 view)
-    - FR-2: PromptOutput style_parameters Schema Documentation — Updated field description to include pixel-art constraint guidance (view_angle, background_type, outline_style)
-    - FR-3: Unit Tests Verify New System Instruction — Updated existing test + added 11 new scenario tests
+    - FR-1: PreProcessing Schema Definitions — `PreProcessingInput` (image_path, remove_background, intermediate_size=256, crop_mode="auto", output_dir) and `PreProcessingOutput` (image_path, original_size, intermediate_size)
+    - FR-2: PreProcessor Process Pipeline — `PreProcessor.process()` loads image, optionally removes background, crops to square, downscales with LANCZOS, saves as PNG
+    - FR-3: Subject-Aware Cropping — Alpha bounding box crop for RGBA images in "auto" mode, center crop fallback for RGB or "center" mode
+    - FR-4: PreProcessing Exceptions — `PreProcessingError`, `BackgroundRemovalError`, `CropError`, `DownscaleError`
 
 - Scenario documents:
-    - `docs/scenario/pixel_art_system_instruction.md`
-    - `docs/scenario/pixel_art_style_parameters.md`
-    - `docs/scenario/pixel_art_test_verification.md`
+    - `docs/scenario/pre_processing_schemas.md`
+    - `docs/scenario/pre_processing_pipeline.md`
+    - `docs/scenario/pre_processing_cropping.md`
+    - `docs/scenario/pre_processing_exceptions.md`
 
 - Test files:
-    - `tests/scenario/test_pixel_art_system_instruction.py`
-    - `tests/scenario/test_pixel_art_style_parameters.py`
-    - `tests/scenario/test_pixel_art_test_verification.py`
-    - `tests/modules/prompt_gen/test_gemini_adapter.py` (updated)
+    - `tests/modules/pre_processing/test_schemas.py`
+    - `tests/modules/pre_processing/test_pipeline.py`
+    - `tests/modules/pre_processing/test_cropping.py`
+    - `tests/modules/pre_processing/test_exceptions.py`
 
-- Implementation complete and all 287 tests passing after refactoring.
+- Implementation files:
+    - `src/modules/pre_processing/__init__.py`
+    - `src/modules/pre_processing/schemas.py`
+    - `src/modules/pre_processing/interface.py`
+    - `src/modules/pre_processing/exceptions.py`
+    - `src/modules/pre_processing/pipeline.py`
+
+- Implementation complete and all 313 tests passing (26 new + 287 existing).
 
 ## How to Test
 

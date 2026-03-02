@@ -2,8 +2,9 @@
 
 ## Implementations Completed
 
-- FR-1: Pixel-Art System Instruction - `docs/scenario/pixel_art_system_instruction.md` - Implementation in `src/modules/prompt_gen/gemini_adapter.py` (updated system_instruction)
-- FR-2: Pixel-Art Style Parameters Documentation - `docs/scenario/pixel_art_style_parameters.md` - Implementation in `src/modules/prompt_gen/schemas.py` (updated style_parameters description)
-- FR-3: Unit Tests Verify Pixel-Art System Instruction - `docs/scenario/pixel_art_test_verification.md` - Updated existing test in `tests/modules/prompt_gen/test_gemini_adapter.py`
+- FR-1: PreProcessing Schema Definitions - `docs/scenario/pre_processing_schemas.md` - Implementation in `src/modules/pre_processing/schemas.py`
+- FR-2: PreProcessor Process Pipeline - `docs/scenario/pre_processing_pipeline.md` - Implementation in `src/modules/pre_processing/pipeline.py`
+- FR-3: Subject-Aware Cropping - `docs/scenario/pre_processing_cropping.md` - Implementation in `src/modules/pre_processing/pipeline.py` (_crop_square, _subject_aware_crop, _center_crop)
+- FR-4: PreProcessing Exceptions - `docs/scenario/pre_processing_exceptions.md` - Implementation in `src/modules/pre_processing/exceptions.py`
 
-All tests now pass. Scenario documents updated.
+All 26 tests now pass. Scenario documents updated.
