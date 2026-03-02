@@ -2,22 +2,18 @@
 
 ## Functional Requirements
 
-### FR-1: CLI Argument Parsing
-Create `main.py` at project root with argparse-based ArgumentParser that defines all required arguments: `--prompt`, `--input`, `--start-from`, `--aspect-ratio`, `--palette`, `--colors`, `--sizes`, `--no-remove-bg`, `--asset-name`, `--output-dir`, `--auto-detect`. Arguments should have sensible defaults and proper validation.
+### FR-1: Pixel-Art-Optimized System Instruction
+Update the `GeminiAdapter._construct_request` system_instruction to constrain generated prompts for pixel-art-friendly compositions. The system instruction must mention: centered subject, simple/transparent background, clear outlines, front or 3/4 view, and limited detail suitable for pixel art.
 
-### FR-2: Argument-to-Config Mapping
-Map parsed CLI arguments to `FullPipelineConfig`. `--palette` detects `.hex` suffix to distinguish preset names from file paths. `--start-from` accepts case-insensitive stage names. `--colors` switches to K-Means mode. `--auto-detect` sets `start_stage=None`.
+### FR-2: PromptOutput style_parameters Schema Documentation for Pixel Art
+Update the `PromptOutput.style_parameters` field description/documentation to include pixel-art constraint guidance (e.g., expected keys like `view_angle`, `background_type`, `outline_style`).
 
-### FR-3: Pipeline Execution with Progress
-Invoke the orchestrator and print stage-by-stage progress lines to stdout. Print final summary with output asset paths, total time, and any errors.
-
-### FR-4: Error Handling and Exit Codes
-Exit code 0 on success, 1 on pipeline error, 2 on argument error. Handle `KeyboardInterrupt` and unexpected exceptions gracefully.
+### FR-3: Unit Tests Verify New System Instruction Content
+Update existing unit tests to verify the new system instruction contains pixel-art-specific keywords: 'centered', 'simple background' or 'transparent background', 'clear outlines', 'front view' or '3/4 view'.
 
 ## Assumptions
 
-- The CLI will construct real adapters (GeminiAdapter, GeminiImageAdapter, ComfyUIAdapter, PostProcessingPipeline) when running for real, but all tests will mock FullPipeline.
-- `--sizes` will accept comma-separated integers (e.g., `--sizes 32,64,128`).
-- `--start-from` maps: `prompt` -> PROMPT, `image` -> IMAGE, `pixelization` -> PIXELIZATION, `post_processing` -> POST_PROCESSING.
-- Progress messages go to stdout since the CLI is human-facing.
-- When `--auto-detect` is used alongside `--start-from`, `--auto-detect` takes precedence.
+- We are updating the existing system_instruction string in `GeminiAdapter._construct_request`, not adding a new method.
+- The pixel-art constraints are additive guidance within the system instruction—the model still generates positive_prompt, negative_prompt, and style_parameters in JSON.
+- "Generated PromptOutput.positive_prompt includes pixel-art-friendly directives" means the system instruction instructs the model to embed such directives in the positive_prompt output, not that we hardcode them in code.
+- Existing tests that check for `"You are an expert prompt engineer"` will need updating to match the new instruction text.

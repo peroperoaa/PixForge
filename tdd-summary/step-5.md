@@ -2,9 +2,8 @@
 
 ## Refactorings Completed
 
-- FR-1: CLI Argument Parsing - `docs/scenario/cli_argument_parsing.md` - Code already clean; `build_parser()` well-structured with clear docstrings
-- FR-2: Argument-to-Config Mapping - `docs/scenario/cli_config_mapping.md` - Extracted `_resolve_stage()` and `_parse_sizes()` as private helpers for clarity
-- FR-3: Pipeline Execution with Progress - `docs/scenario/cli_pipeline_progress.md` - `_print_stage_progress()` separated from `run_pipeline()` for SRP
-- FR-4: Error Handling and Exit Codes - `docs/scenario/cli_error_handling.md` - `main()` catches `SystemExit` from validation cleanly
+- FR-1: Pixel-Art System Instruction - `docs/scenario/pixel_art_system_instruction.md` - Extracted system_instruction from a local variable in `_construct_request` to a class constant `SYSTEM_INSTRUCTION` on `GeminiAdapter` for better visibility and reusability.
+- FR-2: Pixel-Art Style Parameters Documentation - No refactoring needed, the multi-line Field description is already clean.
+- FR-3: Unit Tests Verify Pixel-Art System Instruction - No refactoring needed, test updates are minimal.
 
 All tests still pass after refactoring. Scenario documents updated.

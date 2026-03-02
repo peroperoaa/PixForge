@@ -8,11 +8,10 @@ client = genai.Client(api_key=API_KEY)
 
 prompt = ("Create a picture of a nano banana dish in a fancy restaurant with a Gemini theme")
 response = client.models.generate_content(
-    model="gemini-3.1-flash-image-preview",
+    model="gemini-3-pro-image-preview",
     contents=[prompt],
 )
 
-print("1")
 for part in response.parts:
     if part.text is not None:
         print(part.text)
@@ -20,4 +19,3 @@ for part in response.parts:
         image = part.as_image()
         image.save("generated_image.png")
         
-print("2")

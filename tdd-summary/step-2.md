@@ -2,7 +2,6 @@
 
 ## Scenario Documents Created
 
-- FR-1: CLI Argument Parsing - `docs/scenario/cli_argument_parsing.md`
-- FR-2: Argument-to-Config Mapping - `docs/scenario/cli_config_mapping.md`
-- FR-3: Pipeline Execution with Progress - `docs/scenario/cli_pipeline_progress.md`
-- FR-4: Error Handling and Exit Codes - `docs/scenario/cli_error_handling.md`
+- FR-1: Pixel-Art System Instruction - `docs/scenario/pixel_art_system_instruction.md`
+- FR-2: Pixel-Art Style Parameters Documentation - `docs/scenario/pixel_art_style_parameters.md`
+- FR-3: Unit Tests Verify Pixel-Art System Instruction - `docs/scenario/pixel_art_test_verification.md`

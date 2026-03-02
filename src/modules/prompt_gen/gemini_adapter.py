@@ -13,6 +13,20 @@ from src.modules.prompt_gen.exceptions import APIConnectionError, PromptParsingE
 class GeminiAdapter(BasePromptGenerator):
     """Adapter for generating prompts using Google GenAI SDK."""
     
+    SYSTEM_INSTRUCTION = (
+        "You are an expert prompt engineer specializing in pixel art image generation. "
+        "Given a basic idea or prompt, generate a detailed positive prompt, a negative prompt, "
+        "and relevant style parameters optimized for pixel-art-friendly compositions. "
+        "The positive prompt MUST include these pixel-art directives: "
+        "centered subject composition, simple background or transparent background, "
+        "clear outlines, and a front view or 3/4 view angle. "
+        "The positive prompt should also emphasize limited detail, flat colors, and crisp edges "
+        "suitable for pixel art rendering. "
+        "The negative prompt MUST include common pixel-art anti-patterns such as: "
+        "photorealistic, blurry, gradient shading, excessive detail, complex background. "
+        "Respond strictly in JSON format matching the schema."
+    )
+    
     def __init__(self, config_manager: ConfigManager):
         """Initialize the adapter with a configured client."""
         self.api_key = config_manager.get_api_key()
@@ -21,12 +35,6 @@ class GeminiAdapter(BasePromptGenerator):
         
     def _construct_request(self, input_data: PromptInput) -> Tuple[List[Union[str, types.Part]], types.GenerateContentConfig]:
         """Construct the contents and configuration for the API request."""
-        
-        system_instruction = (
-            "You are an expert prompt engineer. Given a basic idea or prompt, "
-            "generate a detailed positive prompt, a negative prompt, and relevant "
-            "style parameters for an image generation model. Respond strictly in JSON format matching the schema."
-        )
         
         contents = [input_data.text_prompt]
         
@@ -37,7 +45,7 @@ class GeminiAdapter(BasePromptGenerator):
             pass
             
         generation_config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
+            system_instruction=self.SYSTEM_INSTRUCTION,
             response_mime_type="application/json",
             response_schema=PromptOutput,
         )

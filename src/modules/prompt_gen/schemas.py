@@ -11,4 +11,11 @@ class PromptOutput(BaseModel):
     positive_prompt: str = Field(..., description="The generated positive prompt")
 
     negative_prompt: str = Field(..., description="The generated negative prompt")
-    style_parameters: Annotated[Dict[str, Any], WithJsonSchema({'type': 'object'})] = Field(..., description="Style parameters for generation")
+    style_parameters: Annotated[Dict[str, Any], WithJsonSchema({'type': 'object'})] = Field(
+        ...,
+        description=(
+            "Style parameters for pixel-art generation. Expected keys include: "
+            "view_angle (e.g. 'front', '3/4'), background_type (e.g. 'simple', 'transparent'), "
+            "outline_style (e.g. 'clear', 'bold'), color_palette, and detail_level."
+        )
+    )

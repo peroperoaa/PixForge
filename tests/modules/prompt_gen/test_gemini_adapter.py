@@ -38,7 +38,9 @@ def test_construct_request(mock_genai_client):
     assert generation_config.response_mime_type == "application/json"
     assert generation_config.response_schema == PromptOutput
     assert generation_config.system_instruction is not None
-    assert "You are an expert prompt engineer" in generation_config.system_instruction
+    assert "pixel art" in generation_config.system_instruction.lower()
+    assert "centered" in generation_config.system_instruction.lower()
+    assert "clear outlines" in generation_config.system_instruction.lower()
 
 def test_generate_success_with_parsed(mock_genai_client):
     config = ConfigManager(runtime_config={"api_key": "test_key", "gemini_model": "gemini-3.1-pro-preview"})

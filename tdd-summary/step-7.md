@@ -3,15 +3,23 @@
 ## Summary
 
 - Functional requirements addressed:
-    - FR-1: CLI Argument Parsing — `build_parser()` with all 11 flags
-    - FR-2: Argument-to-Config Mapping — `args_to_config()` with palette detection, stage mapping, sizes parsing
-    - FR-3: Pipeline Execution with Progress — `run_pipeline()` + `_print_stage_progress()` for stage-by-stage output
-    - FR-4: Error Handling and Exit Codes — exit 0/1/2/130 for success/pipeline-error/argument-error/interrupt
-- Scenario documents: `docs/scenario/cli_argument_parsing.md`, `cli_config_mapping.md`, `cli_pipeline_progress.md`, `cli_error_handling.md`
-- Test files: `tests/scenario/test_cli_argument_parsing.py`, `test_cli_config_mapping.py`, `test_cli_pipeline_progress.py`, `test_cli_error_handling.py`
-- Implementation: `main.py` at project root
-- All 276 tests passing (39 new + 237 existing), no regressions.
+    - FR-1: Pixel-Art-Optimized System Instruction — Updated `GeminiAdapter.SYSTEM_INSTRUCTION` to constrain prompts for pixel-art compositions (centered, simple/transparent background, clear outlines, front/3/4 view)
+    - FR-2: PromptOutput style_parameters Schema Documentation — Updated field description to include pixel-art constraint guidance (view_angle, background_type, outline_style)
+    - FR-3: Unit Tests Verify New System Instruction — Updated existing test + added 11 new scenario tests
+
+- Scenario documents:
+    - `docs/scenario/pixel_art_system_instruction.md`
+    - `docs/scenario/pixel_art_style_parameters.md`
+    - `docs/scenario/pixel_art_test_verification.md`
+
+- Test files:
+    - `tests/scenario/test_pixel_art_system_instruction.py`
+    - `tests/scenario/test_pixel_art_style_parameters.py`
+    - `tests/scenario/test_pixel_art_test_verification.py`
+    - `tests/modules/prompt_gen/test_gemini_adapter.py` (updated)
+
+- Implementation complete and all 287 tests passing after refactoring.
 
 ## How to Test
 
-Run: `python -m pytest tests/ -v`
+Run: `python -m pytest tests/ -q`

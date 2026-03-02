@@ -12,14 +12,14 @@ from src.modules.image_gen.exceptions import ImageGenerationError
 def mock_config_manager():
     config = Mock(spec=ConfigManager)
     config.get_api_key.return_value = "test_api_key"
-    config.get_image_model.return_value = "gemini-3.1-flash-image-preview"
+    config.get_image_model.return_value = "gemini-3-pro-image-preview"
     return config
 
 def test_adapter_initialization(mock_config_manager):
     with patch('src.modules.image_gen.gemini_adapter.genai.Client') as mock_client:
         adapter = GeminiImageAdapter(mock_config_manager)
         assert adapter.api_key == "test_api_key"
-        assert adapter.model_name == "gemini-3.1-flash-image-preview"
+        assert adapter.model_name == "gemini-3-pro-image-preview"
         mock_client.assert_called_once_with(api_key="test_api_key")
 
 def test_generate_success(mock_config_manager, tmp_path):
@@ -54,7 +54,7 @@ def test_generate_success(mock_config_manager, tmp_path):
         output = adapter.generate(input_data)
         
         call_kwargs = mock_client_instance.models.generate_content.call_args.kwargs
-        assert call_kwargs['model'] == "gemini-3.1-flash-image-preview"
+        assert call_kwargs['model'] == "gemini-3-pro-image-preview"
         assert call_kwargs['contents'] == ["An epic fantasy hero"]
         
         assert isinstance(output, ImageGenOutput)

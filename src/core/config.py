@@ -67,7 +67,7 @@ class ConfigManager:
         """Retrieve Image Model name with priority logic."""
         model = self._get_value('image_model', 'GEMINI_IMAGE_MODEL')
         if not model:
-            return "gemini-3.1-flash-image-preview"
+            return "gemini-3-pro-image-preview"
         return model
 
     def get_comfyui_url(self) -> str:

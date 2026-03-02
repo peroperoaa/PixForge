@@ -1,0 +1,301 @@
+{
+  "tasks": [
+    {
+      "task": "Extend PostProcessingInput with Palette Preset Support",
+      "description": "Add a palette_preset field to PostProcessingInput and update PostProcessingPipeline to resolve built-in presets before quantization.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Add Optional[str] palette_preset field to PostProcessingInput in schemas.py"
+        },
+        {
+          "step": 2,
+          "description": "Add model-level validator: if both palette_preset and palette_path are set, raise ValueError"
+        },
+        {
+          "step": 3,
+          "description": "Update PostProcessingPipeline.process to resolve palette_preset via PaletteLoader.get_preset before quantization"
+        },
+        {
+          "step": 4,
+          "description": "Update PostProcessingOutput palette_name to reflect preset name when palette_preset is used"
+        },
+        {
+          "step": 5,
+          "description": "Update existing unit tests and add new tests for palette_preset behavior"
+        }
+      ],
+      "acceptance-criteria": "PostProcessingInput accepts palette_preset='sweetie-16' and rejects simultaneous palette_preset+palette_path. Pipeline resolves preset name to actual palette before quantization. PostProcessingOutput.palette_name equals the preset name when palette_preset is used. All existing tests remain passing.",
+      "test-plan": {
+        "unit": [
+          "PostProcessingInput accepts palette_preset='sweetie-16' with palette_path=None",
+          "PostProcessingInput accepts palette_path='/some/file.hex' with palette_preset=None",
+          "PostProcessingInput raises ValueError when both palette_preset and palette_path are set",
+          "PostProcessingInput accepts both palette_preset=None and palette_path=None (no quantization or K-Means only)",
+          "Pipeline with palette_preset='sweetie-16' calls PaletteLoader.get_preset and passes 16 colors to ColorQuantizer (mocked components)",
+          "Pipeline with palette_preset set populates PostProcessingOutput.palette_name with the preset name"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "testing-safe-protocol"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Define Full Pipeline Schemas and Stage Enum",
+      "description": "Create Pydantic models and enum for the full pipeline configuration, stage tracking, and result reporting.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/full_pipeline/ directory with __init__.py"
+        },
+        {
+          "step": 2,
+          "description": "Create src/modules/full_pipeline/schemas.py with PipelineStage enum (PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING)"
+        },
+        {
+          "step": 3,
+          "description": "Define FullPipelineConfig model with fields: user_prompt, input_image_path, start_stage, aspect_ratio, palette_preset, color_count, target_sizes, remove_background, asset_name, output_dir"
+        },
+        {
+          "step": 4,
+          "description": "Define StageResult model with fields: stage, success, output_path, error_message, duration_seconds"
+        },
+        {
+          "step": 5,
+          "description": "Define FullPipelineResult model with fields: stage_results list, final_asset_paths list, total_duration_seconds"
+        },
+        {
+          "step": 6,
+          "description": "Add cross-field validators: user_prompt required when start_stage=PROMPT, input_image_path required when start_stage > PROMPT"
+        }
+      ],
+      "acceptance-criteria": "PipelineStage enum has exactly 4 members in execution order. FullPipelineConfig requires user_prompt when start_stage is PROMPT. FullPipelineConfig requires input_image_path when start_stage is IMAGE, PIXELIZATION, or POST_PROCESSING. Default values: start_stage=PROMPT, palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True. FullPipelineResult aggregates per-stage results and final asset paths.",
+      "test-plan": {
+        "unit": [
+          "PipelineStage enum has members PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING in order",
+          "PipelineStage members compare correctly: PROMPT < IMAGE < PIXELIZATION < POST_PROCESSING",
+          "FullPipelineConfig with start_stage=PROMPT requires user_prompt, rejects None/empty",
+          "FullPipelineConfig with start_stage=PIXELIZATION requires input_image_path, rejects None",
+          "FullPipelineConfig defaults: palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True",
+          "FullPipelineConfig accepts all valid combinations of optional parameters",
+          "StageResult serializes stage name, success flag, output_path, and duration",
+          "FullPipelineResult aggregates multiple StageResult objects and final_asset_paths list"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Implement Artifact Auto-Detector",
+      "description": "Create an ArtifactDetector utility that scans output directories to identify existing pipeline artifacts and recommend the optimal start stage.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/full_pipeline/artifact_detector.py"
+        },
+        {
+          "step": 2,
+          "description": "Implement scan_output_directory method that checks output/images/ and output/assets/ for existing files"
+        },
+        {
+          "step": 3,
+          "description": "Implement classification logic: files matching '*pixelized*' pattern belong to PIXELIZATION stage, other images to IMAGE stage, assets to POST_PROCESSING stage"
+        },
+        {
+          "step": 4,
+          "description": "Implement detect_start_stage method returning the recommended next PipelineStage and the path to the latest relevant artifact"
+        },
+        {
+          "step": 5,
+          "description": "Handle edge case: empty directories return PROMPT stage with no artifact path"
+        }
+      ],
+      "acceptance-criteria": "ArtifactDetector.detect_start_stage returns PROMPT when no artifacts exist. Returns PIXELIZATION with image path when non-pixelized images are found. Returns POST_PROCESSING with pixelized image path when pixelized images exist. Returns PROMPT when only final assets exist (nothing to skip to). Latest file is chosen by modification time when multiple artifacts exist in same stage.",
+      "test-plan": {
+        "unit": [
+          "detect_start_stage returns (PROMPT, None) when output directories are empty (mocked filesystem)",
+          "detect_start_stage returns (PIXELIZATION, 'output/images/gen_001.png') when non-pixelized image exists (mocked)",
+          "detect_start_stage returns (POST_PROCESSING, 'output/images/pixelized_001.png') when pixelized image exists (mocked)",
+          "detect_start_stage selects latest file by mtime when multiple pixelized images exist (mocked)",
+          "detect_start_stage returns (PROMPT, None) when only output/assets/ files exist (mocked)",
+          "scan_output_directory handles missing directories gracefully without raising exceptions"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Implement Full Pipeline Orchestrator",
+      "description": "Build the FullPipeline class that chains all four modules sequentially with stage-skipping support and artifact auto-detection.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/full_pipeline/orchestrator.py implementing the orchestration logic"
+        },
+        {
+          "step": 2,
+          "description": "Implement initialization accepting ConfigManager and instantiating all four module adapters"
+        },
+        {
+          "step": 3,
+          "description": "Implement run method that accepts FullPipelineConfig and executes stages from start_stage onwards"
+        },
+        {
+          "step": 4,
+          "description": "Implement auto-detect mode: when start_stage is None, use ArtifactDetector to determine entry point"
+        },
+        {
+          "step": 5,
+          "description": "Chain stage outputs: prompt_output.positive_prompt feeds into image_gen, image_output.image_path feeds into pixelization, pixelization_output.image_path feeds into post_processing"
+        },
+        {
+          "step": 6,
+          "description": "Record StageResult for each executed stage with timing and error info"
+        },
+        {
+          "step": 7,
+          "description": "Handle per-stage errors: catch module exceptions, record failure in StageResult, and abort remaining stages"
+        }
+      ],
+      "acceptance-criteria": "FullPipeline.run executes stages PROMPT through POST_PROCESSING in order when start_stage=PROMPT. Pipeline skips stages before start_stage when given explicit start point. Pipeline uses ArtifactDetector when start_stage is None. Each stage output feeds correctly into the next stage input. Stage failures are recorded in StageResult with error messages. Pipeline aborts remaining stages after a failure. FullPipelineResult contains timing data for each executed stage.",
+      "test-plan": {
+        "unit": [
+          "run with start_stage=PROMPT calls all four module adapters in sequence (all mocked)",
+          "run with start_stage=PIXELIZATION skips prompt_gen and image_gen adapters (mocked, verify not called)",
+          "run with start_stage=POST_PROCESSING only calls post_processing pipeline (mocked, verify others not called)",
+          "run chains prompt_output.positive_prompt into ImageGenInput.prompt correctly (mocked modules)",
+          "run chains image_output.image_path into PixelizationInput.image_path correctly (mocked modules)",
+          "run chains pixelization_output.image_path into PostProcessingInput.image_path correctly (mocked modules)",
+          "run uses palette_preset='sweetie-16' from config when constructing PostProcessingInput (mocked)",
+          "run records StageResult with success=True and duration for each completed stage (mocked)",
+          "run stops execution and records error when a stage adapter raises an exception (mocked)",
+          "run with start_stage=None invokes ArtifactDetector and uses returned stage and path (mocked detector)"
+        ],
+        "integration": [
+          "Pipeline correctly constructs ImageGenInput from real PromptOutput schema object",
+          "Pipeline correctly constructs PixelizationInput from real ImageGenOutput schema object",
+          "Pipeline correctly constructs PostProcessingInput from real PixelizationOutput schema object with palette_preset default"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "systematic-debugging"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Implement CLI Entry Point",
+      "description": "Create a main.py with argparse-based CLI that maps command-line arguments to FullPipelineConfig and invokes the orchestrator.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create main.py at project root with argparse ArgumentParser"
+        },
+        {
+          "step": 2,
+          "description": "Define CLI arguments: --prompt, --input, --start-from, --aspect-ratio, --palette, --colors, --sizes, --no-remove-bg, --asset-name, --output-dir, --auto-detect"
+        },
+        {
+          "step": 3,
+          "description": "Implement argument validation and mapping to FullPipelineConfig"
+        },
+        {
+          "step": 4,
+          "description": "Print stage-by-stage progress messages to stdout during execution"
+        },
+        {
+          "step": 5,
+          "description": "Print final summary: list of output asset paths, total time, any errors"
+        },
+        {
+          "step": 6,
+          "description": "Handle keyboard interrupts and unexpected exceptions gracefully with exit codes"
+        }
+      ],
+      "acceptance-criteria": "python main.py --prompt 'a pixel art sword' runs the full pipeline. python main.py --input img.png --start-from post_processing runs only Module 4. python main.py --auto-detect uses ArtifactDetector to choose start stage. --palette accepts preset names ('sweetie-16', 'gb', 'nes') and .hex file paths. --colors N switches to K-Means mode with N colors. Exit code 0 on success, 1 on pipeline error, 2 on argument error. Each executing stage prints a progress line.",
+      "test-plan": {
+        "unit": [
+          "CLI parses --prompt 'test prompt' into FullPipelineConfig with user_prompt='test prompt' and start_stage=PROMPT",
+          "CLI parses --input img.png --start-from pixelization into config with input_image_path and start_stage=PIXELIZATION",
+          "CLI parses --palette sweetie-16 into config with palette_preset='sweetie-16'",
+          "CLI parses --palette /path/to/file.hex into config with palette_path set",
+          "CLI parses --colors 8 into config with color_count=8 and palette_preset=None",
+          "CLI parses --sizes 32 64 128 into config with target_sizes=[32,64,128]",
+          "CLI parses --no-remove-bg into config with remove_background=False",
+          "CLI parses --auto-detect into config with start_stage=None",
+          "CLI raises SystemExit(2) when --prompt is missing and --auto-detect is not set and --input is not set"
+        ],
+        "integration": [
+          "CLI with --prompt invokes FullPipeline.run with correctly mapped FullPipelineConfig (mocked pipeline)",
+          "CLI prints stage progress lines for each StageResult returned by pipeline (mocked pipeline)"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "cli-guideline"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Verify Full Pipeline End-to-End",
+      "description": "Run the complete pipeline against real APIs and local ComfyUI to validate the full prompt-to-asset workflow.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Run python main.py --prompt 'a pixel art sword on transparent background' with valid API keys and running ComfyUI"
+        },
+        {
+          "step": 2,
+          "description": "Verify output/assets/ contains {asset_name}_32x32.png and {asset_name}_64x64.png files"
+        },
+        {
+          "step": 3,
+          "description": "Run python main.py --input output/images/latest.png --start-from post_processing to verify stage skipping"
+        },
+        {
+          "step": 4,
+          "description": "Run python main.py --auto-detect to verify artifact detection and auto-resume"
+        },
+        {
+          "step": 5,
+          "description": "Run python main.py --prompt 'test' with ComfyUI stopped to verify graceful error handling"
+        },
+        {
+          "step": 6,
+          "description": "Run all pytest tests to confirm no regressions across the full test suite"
+        }
+      ],
+      "acceptance-criteria": "Full pipeline produces correctly sized pixel art assets in output/assets/ directory. Stage skipping via --start-from and --input works correctly. Auto-detect mode identifies existing artifacts and resumes from correct stage. Pipeline failures produce descriptive error messages and non-zero exit codes. All existing pytest tests pass without modification.",
+      "test-plan": {
+        "unit": [],
+        "integration": [],
+        "e2e-manual": [
+          "Run full pipeline with --prompt -> verify 32x32 and 64x64 PNG assets are generated with Sweetie-16 palette colors",
+          "Open output assets in image viewer -> verify transparent background and limited color palette",
+          "Run with --start-from post_processing and existing pixelized image -> verify only Module 4 executes",
+          "Run with --auto-detect after previous run -> verify pipeline resumes from correct stage",
+          "Run with ComfyUI offline -> verify graceful error message at pixelization stage",
+          "Run pytest -> all unit and integration tests pass"
+        ]
+      },
+      "skills": [
+        "verification-before-completion"
+      ],
+      "complete": true
+    }
+  ]
+}

@@ -129,7 +129,7 @@ def test_image_model_default():
          patch.dict(os.environ, env_vars, clear=True):
         
         config_manager = ConfigManager(runtime_config=runtime_args)
-        assert config_manager.get_image_model() == 'gemini-3.1-flash-image-preview'
+        assert config_manager.get_image_model() == 'gemini-3-pro-image-preview'
 
 # Scenario: ComfyUI URL configuration
 def test_comfyui_url_default():
