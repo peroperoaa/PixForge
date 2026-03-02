@@ -2,8 +2,9 @@
 
 ## Failing Tests Created
 
-- FR-1 & FR-2: Schema palette_preset field + mutual exclusion - `docs/scenario/post_processing_palette_preset_schema.md` - `tests/modules/post_processing/test_palette_preset_schema.py`
-- FR-3: Pipeline resolves palette_preset - `docs/scenario/post_processing_palette_preset_pipeline.md` - `tests/modules/post_processing/test_palette_preset_pipeline.py`
-- FR-4: Integration end-to-end - `docs/scenario/post_processing_palette_preset_integration.md` - `tests/modules/post_processing/test_palette_preset_integration.py`
+- FR-1: PipelineStage enum with ordering - `docs/scenario/full_pipeline_stage_enum.md` - `tests/modules/full_pipeline/test_stage_enum.py`
+- FR-2: FullPipelineConfig model - `docs/scenario/full_pipeline_config.md` - `tests/modules/full_pipeline/test_config.py`
+- FR-3: StageResult model - `docs/scenario/full_pipeline_stage_result.md` - `tests/modules/full_pipeline/test_stage_result.py`
+- FR-4: FullPipelineResult model - `docs/scenario/full_pipeline_result.md` - `tests/modules/full_pipeline/test_pipeline_result.py`
 
-All 9 tests confirmed failing (RED).
+All tests confirmed failing (RED) with ModuleNotFoundError: No module named 'src.modules.full_pipeline'.

@@ -91,7 +91,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Implement Artifact Auto-Detector",

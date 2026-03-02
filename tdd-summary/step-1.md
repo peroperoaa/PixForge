@@ -2,20 +2,23 @@
 
 ## Functional Requirements
 
-### FR-1: Add palette_preset field to PostProcessingInput
-PostProcessingInput should accept an Optional[str] `palette_preset` field that names a built-in palette preset (e.g. 'sweetie-16').
+### FR-1: PipelineStage enum with ordering
+PipelineStage enum must have exactly 4 members in execution order: PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING. The enum must support ordering comparison operators (<, >, <=, >=).
 
-### FR-2: Mutual exclusion of palette_preset and palette_path
-If both `palette_preset` and `palette_path` are set simultaneously, PostProcessingInput must raise a ValueError via a model-level validator.
+### FR-2: FullPipelineConfig model with defaults and cross-field validation
+FullPipelineConfig Pydantic model with fields: user_prompt, input_image_path, start_stage, aspect_ratio, palette_preset, color_count, target_sizes, remove_background, asset_name, output_dir. Default values: start_stage=PROMPT, palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True. Cross-field validators: user_prompt required when start_stage=PROMPT; input_image_path required when start_stage > PROMPT (IMAGE, PIXELIZATION, POST_PROCESSING).
 
-### FR-3: Pipeline resolves palette_preset before quantization
-PostProcessingPipeline.process must resolve `palette_preset` via `PaletteLoader.get_preset()` to obtain the actual palette, then pass it to `ColorQuantizer.quantize()`.
+### FR-3: StageResult model
+StageResult Pydantic model with fields: stage (PipelineStage), success (bool), output_path (Optional[str]), error_message (Optional[str]), duration_seconds (float).
 
-### FR-4: PostProcessingOutput.palette_name reflects preset name
-When `palette_preset` is used, `PostProcessingOutput.palette_name` should equal the preset name string (not a file path basename).
+### FR-4: FullPipelineResult model
+FullPipelineResult Pydantic model with fields: stage_results (list[StageResult]), final_asset_paths (list[str]), total_duration_seconds (float).
 
 ## Assumptions
 
-- The `palette_preset` field accepts any string that `PaletteLoader.get_preset()` can resolve. Invalid preset names will raise ValueError at pipeline runtime, not at schema validation.
-- When `palette_preset` is set, quantization is triggered even if `color_count` is None.
-- The existing behavior for `palette_path` and `color_count` remains unchanged.
+- PipelineStage enum uses IntEnum (or similar) to support natural ordering via integer values.
+- user_prompt is Optional[str] with default None; required only when start_stage == PROMPT.
+- input_image_path is Optional[str] with default None; required only when start_stage > PROMPT.
+- aspect_ratio defaults to "1:1" following ImageGenInput pattern.
+- color_count is Optional[int] with default None.
+- asset_name and output_dir are Optional[str] with default None.

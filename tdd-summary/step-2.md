@@ -2,6 +2,7 @@
 
 ## Scenario Documents Created
 
-- FR-1 & FR-2: PostProcessingInput palette_preset field + mutual exclusion - `docs/scenario/post_processing_palette_preset_schema.md`
-- FR-3: Pipeline resolves palette_preset before quantization - `docs/scenario/post_processing_palette_preset_pipeline.md`
-- FR-4: Integration end-to-end - `docs/scenario/post_processing_palette_preset_integration.md`
+- FR-1: PipelineStage enum with ordering - `docs/scenario/full_pipeline_stage_enum.md`
+- FR-2: FullPipelineConfig model with defaults and validation - `docs/scenario/full_pipeline_config.md`
+- FR-3: StageResult model - `docs/scenario/full_pipeline_stage_result.md`
+- FR-4: FullPipelineResult model - `docs/scenario/full_pipeline_result.md`
