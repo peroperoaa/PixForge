@@ -698,7 +698,7 @@
         "tdd-workflow",
         "testing-safe-protocol"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Implement Palette Loader",
