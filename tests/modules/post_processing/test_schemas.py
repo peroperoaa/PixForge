@@ -68,14 +68,15 @@ class TestPostProcessingInput:
         assert input_data.color_count == 8
         assert input_data.palette_path is None
 
-    def test_rejects_neither_palette_path_nor_color_count(self):
-        """PostProcessingInput rejects when both palette_path and color_count are None."""
-        with pytest.raises(ValidationError):
-            PostProcessingInput(
-                image_path="input.png",
-                asset_name="hero_sprite",
-                target_sizes=[32],
-            )
+    def test_accepts_neither_palette_path_nor_color_count(self):
+        """PostProcessingInput accepts when both palette_path and color_count are None (quantization skipped)."""
+        input_data = PostProcessingInput(
+            image_path="input.png",
+            asset_name="hero_sprite",
+            target_sizes=[32],
+        )
+        assert input_data.color_count is None
+        assert input_data.palette_path is None
 
     def test_remove_background_defaults_false(self):
         """PostProcessingInput defaults remove_background to False."""
