@@ -5,3 +5,24 @@ __pycache__/
 .venv
 venv
 output/
+
+# TDD archives and logs
+completed-tdd-archives/
+tdd-summary/
+tasks_phase*.json
+tasks_*.json
+
+# Temporary files
+*.txt
+!requirements.txt
+*.log
+debug_*.py
+demo_*.py
+generate_image_test.py
+test_api.py
+update_tasks.py
+
+# Editor/IDE
+.vscode/
+.idea/
+.claude/
