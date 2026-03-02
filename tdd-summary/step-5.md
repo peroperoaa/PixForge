@@ -2,8 +2,6 @@
 
 ## Refactorings Completed
 
-- FR-1: Post-Processing Schemas — Code is already clean and minimal; no refactoring needed.
-- FR-2: Post-Processing Interface — Code is already clean and minimal; no refactoring needed.
-- FR-3: Post-Processing Exceptions — Code is already clean and minimal; no refactoring needed.
+- FR-1, FR-2, FR-3: Code already clean and minimal. No structural refactoring needed. Helper function `_hex_to_rgb` is well-separated, presets are declarative, and class methods are static with clear docstrings.
 
-All tests still pass after review (17/17). Scenario documents updated.
+All tests still pass after refactoring. Scenario documents updated.

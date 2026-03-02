@@ -2,28 +2,18 @@
 
 ## Functional Requirements
 
-### FR-1: Post-Processing Schemas
-Define `PostProcessingInput` and `PostProcessingOutput` Pydantic models in `src/modules/post_processing/schemas.py`.
-- `PostProcessingInput`: `image_path` (str), `asset_name` (str), `target_sizes` (list[int], non-empty, all positive), `remove_background` (bool, default False), `color_count` (Optional[int]), `palette_path` (Optional[str]), `output_dir` (Optional[str])
-- Validation: `target_sizes` must be non-empty and contain only positive integers
-- Validation: At least one of `palette_path` or `color_count` must be provided
-- `PostProcessingOutput`: `output_paths` (list[str]), `target_sizes` (list[int]), `color_count` (Optional[int]), `palette_name` (Optional[str])
+### FR-1: Palette Loader - Load from .hex File
+PaletteLoader.load_from_hex_file parses Lospec .hex palette files (one hex color per line, e.g. 'FF5733') into a list of (R, G, B) tuples. Empty lines and comment lines (starting with '#') are ignored. Invalid hex strings raise ValueError. Files with fewer than 2 valid colors raise ValueError.
 
-### FR-2: Post-Processing Interface
-Define `BasePostProcessor` abstract class in `src/modules/post_processing/interface.py` with abstract method `process(input_data: PostProcessingInput) -> PostProcessingOutput`.
-- Cannot be instantiated directly
-- Subclasses must implement `process` method
+### FR-2: Palette Loader - Built-in Presets
+PaletteLoader provides a built-in presets dictionary containing classic palettes: GB (4 colors), NES (54 colors), and Sweetie-16 (16 colors). All preset colors have R, G, B values in range 0-255.
 
-### FR-3: Post-Processing Exceptions
-Define exception hierarchy in `src/modules/post_processing/exceptions.py`:
-- `PostProcessingError` (base exception)
-- `BackgroundRemovalError(PostProcessingError)`
-- `ColorQuantizationError(PostProcessingError)`
-- `DownscaleError(PostProcessingError)`
+### FR-3: Palette Loader - Get Preset by Name
+PaletteLoader.get_preset(name) returns a palette (list of RGB tuples) by preset name. Raises ValueError with a descriptive message for unknown preset names.
 
 ## Assumptions
 
-- Follow existing module patterns (pixelization module as reference).
-- All `__init__.py` files are empty.
-- Schemas validation follows Pydantic v2 conventions consistent with the rest of the project.
-- `palette_path` and `color_count` validation: at least one must be non-None.
+- .hex file format: one 6-character hex color code per line (no '#' prefix on color lines)
+- Lines starting with '#' are treated as comments and skipped
+- Preset name lookup is case-insensitive (e.g. 'GB' and 'gb' both work)
+- PaletteLoader is a class with static/class methods (no instance state needed)
