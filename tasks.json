@@ -542,7 +542,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Verify Module 3 with Integration Script",
