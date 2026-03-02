@@ -439,7 +439,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Update ConfigManager for ComfyUI Settings",
