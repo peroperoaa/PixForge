@@ -14,7 +14,7 @@ class PipelineStage(IntEnum):
 class FullPipelineConfig(BaseModel):
     user_prompt: Optional[str] = None
     input_image_path: Optional[str] = None
-    start_stage: PipelineStage = PipelineStage.PROMPT
+    start_stage: Optional[PipelineStage] = PipelineStage.PROMPT
     aspect_ratio: str = "1:1"
     palette_preset: str = "sweetie-16"
     color_count: Optional[int] = None
@@ -25,6 +25,9 @@ class FullPipelineConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_stage_requirements(self) -> "FullPipelineConfig":
+        # Skip validation when start_stage is None (auto-detect mode)
+        if self.start_stage is None:
+            return self
         if self.start_stage == PipelineStage.PROMPT and not self.user_prompt:
             raise ValueError(
                 "user_prompt is required when start_stage is PROMPT"

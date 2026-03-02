@@ -2,21 +2,31 @@
 
 ## Functional Requirements
 
-### FR-1: Scan output directory for existing artifacts
-ArtifactDetector must scan `output/images/` and `output/assets/` directories to identify existing pipeline artifacts. Files matching `*pixelized*` pattern belong to PIXELIZATION stage, other image files belong to IMAGE stage, and files in `output/assets/` belong to POST_PROCESSING stage.
+### FR-1: Sequential Stage Execution
+FullPipeline.run executes stages PROMPT → IMAGE → PIXELIZATION → POST_PROCESSING in order when start_stage=PROMPT, chaining each stage's output into the next stage's input.
 
-### FR-2: Detect recommended start stage
-`detect_start_stage` method must return a tuple of `(PipelineStage, Optional[Path])` representing the recommended NEXT stage and the path to the latest relevant artifact. When multiple artifacts exist in the same stage, the latest file by modification time is chosen.
+### FR-2: Stage Skipping
+Pipeline skips stages before start_stage when given an explicit start point (e.g., start_stage=PIXELIZATION skips PROMPT and IMAGE).
 
-### FR-3: Handle empty/missing directories
-When no artifacts exist (empty directories or missing directories), `detect_start_stage` returns `(PipelineStage.PROMPT, None)`. When only final assets exist (nothing to skip to), also returns `(PipelineStage.PROMPT, None)`.
+### FR-3: Auto-Detect Mode
+Pipeline uses ArtifactDetector when start_stage is None to determine the entry point and artifact path.
+
+### FR-4: Stage Output Chaining
+prompt_output.positive_prompt feeds into image_gen input, image_output.image_path feeds into pixelization input, pixelization_output.image_path feeds into post_processing input.
+
+### FR-5: Stage Timing and Results
+Each executed stage records a StageResult with timing data (duration_seconds), and FullPipelineResult contains all stage results plus total_duration_seconds.
+
+### FR-6: Error Handling and Abort
+Stage failures are caught, recorded in StageResult with error_message and success=False, and remaining stages are aborted.
+
+### FR-7: Dependency Injection
+FullPipeline accepts four module adapters (BasePromptGenerator, BaseImageGenerator, BasePixelization, BasePostProcessor) via constructor for testability.
 
 ## Assumptions
 
-- Image file extensions include common formats: `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`.
-- The `*pixelized*` pattern is case-insensitive matching on the filename (stem).
-- "Latest file" is determined by filesystem modification time (`os.path.getmtime` or `Path.stat().st_mtime`).
-- The detector takes the output directory path as a constructor parameter.
-- When pixelized images exist, we recommend POST_PROCESSING as the next stage (with the pixelized image path).
-- When non-pixelized images exist (but no pixelized ones), we recommend PIXELIZATION as the next stage (with the image path).
-- When only assets exist, there's nothing useful to skip to, so we return PROMPT.
+- start_stage=None in FullPipelineConfig triggers auto-detect mode. The schema needs to be updated to make start_stage Optional.
+- When auto-detect resolves to a stage > PROMPT, the detected artifact_path is used as input_image_path.
+- asset_name defaults to "output" if not specified in config.
+- output_dir defaults to ConfigManager.get_post_processing_output_dir() if not specified.
+- The orchestrator does not retry failed stages — it aborts immediately on first failure.

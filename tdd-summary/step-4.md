@@ -2,8 +2,10 @@
 
 ## Implementations Completed
 
-- FR-1: Scan output directory - `docs/scenario/artifact_detector_scan.md` - Implementation in `src/modules/full_pipeline/artifact_detector.py` (scan_output_directory method)
-- FR-2: Detect start stage - `docs/scenario/artifact_detector_detect.md` - Implementation in `src/modules/full_pipeline/artifact_detector.py` (detect_start_stage method)
-- FR-3: Edge cases - `docs/scenario/artifact_detector_edge_cases.md` - Handled by same implementation
+- FR-1: Sequential Execution - `docs/scenario/orchestrator_sequential.md` - Implementation in `src/modules/full_pipeline/orchestrator.py`
+- FR-2: Stage Skipping - `docs/scenario/orchestrator_skip_stages.md` - Implementation in `src/modules/full_pipeline/orchestrator.py`
+- FR-3: Auto-Detect Mode - `docs/scenario/orchestrator_auto_detect.md` - Implementation in `src/modules/full_pipeline/orchestrator.py` + schema update in `src/modules/full_pipeline/schemas.py` (start_stage now Optional)
+- FR-5/FR-6: Error Handling - `docs/scenario/orchestrator_error_handling.md` - Implementation in `src/modules/full_pipeline/orchestrator.py`
+- FR-4/FR-5: Timing/Results - `docs/scenario/orchestrator_timing_results.md` - Implementation in `src/modules/full_pipeline/orchestrator.py`
 
-All 18 tests now pass. Scenario documents updated.
+All 16 tests now pass. Scenario documents updated.
