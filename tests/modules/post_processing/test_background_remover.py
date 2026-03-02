@@ -41,13 +41,19 @@ class TestBackgroundRemoverRemove:
 
         input_image = Image.new("RGB", (100, 80), (255, 0, 0))
         output_image = Image.new("RGBA", (100, 80), (255, 0, 0, 128))
+        
+        mock_session = MagicMock()
+        mock_rembg.new_session.return_value = mock_session
         mock_rembg.remove.return_value = output_image
 
-        remover = BackgroundRemover()
+        remover = BackgroundRemover(model_name="u2net")
         result = remover.remove(input_image)
 
         assert result.mode == "RGBA"
-        mock_rembg.remove.assert_called_once()
+        
+        # Verify session creation and usage
+        mock_rembg.new_session.assert_called_with("u2net")
+        mock_rembg.remove.assert_called_with(input_image, session=mock_session)
 
     def test_remove_returns_rgba_from_rgba_input(self, mock_rembg):
         """remove returns RGBA mode image when given RGBA input (already has alpha) with mock rembg."""

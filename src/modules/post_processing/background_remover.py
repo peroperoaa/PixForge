@@ -30,7 +30,8 @@ class BackgroundRemover:
         try:
             import rembg
 
-            result = rembg.remove(image, model_name=self.model_name)
+            session = rembg.new_session(self.model_name)
+            result = rembg.remove(image, session=session)
 
             if not isinstance(result, Image.Image):
                 raise BackgroundRemovalError(

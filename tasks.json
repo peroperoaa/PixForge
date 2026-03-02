@@ -1,160 +1,39 @@
 {
   "tasks": [
     {
-      "task": "Initialize Python Project Structure",
-      "description": "Create project directories and configuration files for Module 1.",
+      "task": "Extend PostProcessingInput with Palette Preset Support",
+      "description": "Add a palette_preset field to PostProcessingInput and update PostProcessingPipeline to resolve built-in presets before quantization.",
       "steps": [
         {
           "step": 1,
-          "description": "Create directories: src/core, src/modules/prompt_gen, tests/core, tests/modules/prompt_gen"
+          "description": "Add Optional[str] palette_preset field to PostProcessingInput in schemas.py"
         },
         {
           "step": 2,
-          "description": "Create empty __init__.py files in all created directories"
+          "description": "Add model-level validator: if both palette_preset and palette_path are set, raise ValueError"
         },
         {
           "step": 3,
-          "description": "Create requirements.txt with google-genai, pydantic, python-dotenv, pytest, pytest-mock"
+          "description": "Update PostProcessingPipeline.process to resolve palette_preset via PaletteLoader.get_preset before quantization"
         },
         {
           "step": 4,
-          "description": "Create .env.example with placeholders for GOOGLE_API_KEY and GEMINI_MODEL"
+          "description": "Update PostProcessingOutput palette_name to reflect preset name when palette_preset is used"
         },
         {
           "step": 5,
-          "description": "Create .gitignore to exclude .env, __pycache__, and .pytest_cache"
+          "description": "Update existing unit tests and add new tests for palette_preset behavior"
         }
       ],
-      "acceptance-criteria": "Project structure exists. Requirements file lists all dependencies. Gitignore excludes sensitive files.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
-        "e2e-manual": [
-          "Verify folder structure matches design",
-          "Verify .env is ignored by git"
-        ]
-      },
-      "skills": [
-        "setup-fresh-project"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement ConfigManager with Layered Strategy",
-      "description": "Develop a configuration manager that reads settings from Runtime, File, and Environment variables in priority order.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/core/config.py and tests/core/test_config.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement ConfigManager class with methods to set/get API keys and models"
-        },
-        {
-          "step": 3,
-          "description": "Implement priority logic: Runtime args > config.json (simulated) > .env"
-        }
-      ],
-      "acceptance-criteria": "ConfigManager correctly resolves API key from highest priority source. Missing key raises appropriate error.",
+      "acceptance-criteria": "PostProcessingInput accepts palette_preset='sweetie-16' and rejects simultaneous palette_preset+palette_path. Pipeline resolves preset name to actual palette before quantization. PostProcessingOutput.palette_name equals the preset name when palette_preset is used. All existing tests remain passing.",
       "test-plan": {
         "unit": [
-          "Runtime injection overrides environment variable",
-          "Environment variable is used when runtime/file are missing",
-          "get_api_key returns correct value for all sources",
-          "get_model_name defaults to gemini-3.1-pro-preview if not set"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Define Pydantic Data Models",
-      "description": "Create strict Pydantic schemas for Prompt Input and Output to ensure JSON mode compatibility.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/prompt_gen/schemas.py"
-        },
-        {
-          "step": 2,
-          "description": "Define PromptInput model (text_prompt, image_path optional)"
-        },
-        {
-          "step": 3,
-          "description": "Define PromptOutput model (positive_prompt, negative_prompt, style_parameters)"
-        }
-      ],
-      "acceptance-criteria": "Schemas validate correct input types and reject invalid data. PromptOutput schema can be exported to JSON schema format.",
-      "test-plan": {
-        "unit": [
-          "PromptInput accepts valid text and optional image path",
-          "PromptOutput validation fails if positive_prompt is missing",
-          "PromptOutput serializes to expected JSON structure"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Create BasePromptGenerator Interface",
-      "description": "Define an abstract base class to standardize the prompt generation interface across different providers.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/prompt_gen/interface.py"
-        },
-        {
-          "step": 2,
-          "description": "Define abstract method generate(input: PromptInput) -> PromptOutput"
-        }
-      ],
-      "acceptance-criteria": "Abstract class prevents instantiation. Concrete subclasses must implement generate method.",
-      "test-plan": {
-        "unit": [
-          "Cannot instantiate BasePromptGenerator directly",
-          "Subclass without generate method fails to instantiate"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Gemini Adapter Request Logic",
-      "description": "Develop the Gemini adapter to construct correct API requests using the Google GenAI SDK.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/prompt_gen/gemini_adapter.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement initialization logic using ConfigManager"
-        },
-        {
-          "step": 3,
-          "description": "Implement _construct_request method to prepare messages and config"
-        }
-      ],
-      "acceptance-criteria": "Adapter initializes with correct model. Request payload includes system instructions and JSON schema.",
-      "test-plan": {
-        "unit": [
-          "Adapter initializes with API key from ConfigManager",
-          "System prompt is correctly formatted",
-          "Generation config includes response_mime_type='application/json'"
+          "PostProcessingInput accepts palette_preset='sweetie-16' with palette_path=None",
+          "PostProcessingInput accepts palette_path='/some/file.hex' with palette_preset=None",
+          "PostProcessingInput raises ValueError when both palette_preset and palette_path are set",
+          "PostProcessingInput accepts both palette_preset=None and palette_path=None (no quantization or K-Means only)",
+          "Pipeline with palette_preset='sweetie-16' calls PaletteLoader.get_preset and passes 16 colors to ColorQuantizer (mocked components)",
+          "Pipeline with palette_preset set populates PostProcessingOutput.palette_name with the preset name"
         ],
         "integration": [],
         "e2e-manual": []
@@ -163,677 +42,48 @@
         "tdd-workflow",
         "testing-safe-protocol"
       ],
-      "complete": true
+      "complete": false
     },
     {
-      "task": "Implement Gemini Adapter Response Parsing",
-      "description": "Implement response handling logic to parse JSON output and handle API errors.",
+      "task": "Define Full Pipeline Schemas and Stage Enum",
+      "description": "Create Pydantic models and enum for the full pipeline configuration, stage tracking, and result reporting.",
       "steps": [
         {
           "step": 1,
-          "description": "Implement generate method in GeminiAdapter"
+          "description": "Create src/modules/full_pipeline/ directory with __init__.py"
         },
         {
           "step": 2,
-          "description": "Add error handling for API failures and malformed JSON"
+          "description": "Create src/modules/full_pipeline/schemas.py with PipelineStage enum (PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING)"
         },
         {
           "step": 3,
-          "description": "Convert raw JSON response to PromptOutput object"
-        }
-      ],
-      "acceptance-criteria": "Valid JSON response is converted to PromptOutput. Network errors or invalid JSON raise custom exceptions.",
-      "test-plan": {
-        "unit": [
-          "Parses valid JSON string into PromptOutput object",
-          "Raises custom exception on API 500 error",
-          "Raises validation error if API returns non-conforming JSON"
-        ],
-        "integration": [
-          "Mocked client returns success and adapter returns valid object"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Verify Module 1 with Integration Script",
-      "description": "Create a script to run a real end-to-end test against the Gemini API (requires valid API key).",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create demo_module1.py in project root"
-        },
-        {
-          "step": 2,
-          "description": "Script should read real .env, instantiate adapter, and print result"
-        }
-      ],
-      "acceptance-criteria": "Script runs successfully with a valid API key and prints a structured PromptOutput.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
-        "e2e-manual": [
-          "Run script with valid key -> verify JSON output matches pixel art requirements",
-          "Run script with invalid key -> verify error message"
-        ]
-      },
-      "skills": [
-        "verification-before-completion"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Update Project Dependencies for Module 2",
-      "description": "Add Pillow to requirements.txt for image saving and processing, and update environment variables.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add Pillow to requirements.txt"
-        },
-        {
-          "step": 2,
-          "description": "Update .env.example with GEMINI_IMAGE_MODEL placeholder"
-        }
-      ],
-      "acceptance-criteria": "requirements.txt includes Pillow and .env.example contains GEMINI_IMAGE_MODEL placeholder.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
-        "e2e-manual": [
-          "Verify requirements.txt contains Pillow",
-          "Verify .env.example contains new keys"
-        ]
-      },
-      "skills": [
-        "installing-dependencies"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Create Base Image Generator Interface",
-      "description": "Define an abstract base class to standardize the image generation interface across different providers.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/image_gen and tests/modules/image_gen directories with __init__.py"
-        },
-        {
-          "step": 2,
-          "description": "Create src/modules/image_gen/schemas.py to define ImageGenInput and ImageGenOutput"
-        },
-        {
-          "step": 3,
-          "description": "Create src/modules/image_gen/interface.py defining abstract method generate"
-        }
-      ],
-      "acceptance-criteria": "Directory structure is set up. Schemas enforce input and output types. Interface prevents direct instantiation.",
-      "test-plan": {
-        "unit": [
-          "Schemas validation rejects incorrect types and validates expected schema",
-          "interface raises TypeError when instantiating BaseImageGenerator directly"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement ConfigManager Support for Image Models",
-      "description": "Update ConfigManager to handle different model keys for image generation.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add get_image_model() method to ConfigManager"
-        },
-        {
-          "step": 2,
-          "description": "Prioritize CLI runtime arg --image-model over GEMINI_IMAGE_MODEL in .env"
-        }
-      ],
-      "acceptance-criteria": "ConfigManager returns valid image_model_name from env or default string.",
-      "test-plan": {
-        "unit": [
-          "get_image_model returns GEMINI_IMAGE_MODEL environment variable value",
-          "get_image_model returns default model name if env variable is absent",
-          "get_image_model respects explicit initialization override"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Gemini Image Generator Adapter API Logic",
-      "description": "Build adapter utilizing google-genai SDK's models.generate_images to trigger image creation with proper payload.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/image_gen/exceptions.py with ImageGenerationError"
-        },
-        {
-          "step": 2,
-          "description": "Create src/modules/image_gen/gemini_adapter.py extending BaseImageGenerator"
-        },
-        {
-          "step": 3,
-          "description": "Implement construction logic extracting prompts and configuring model generation params (e.g., aspect_ratio=1:1 and person_generation='allow_adult')"
-        }
-      ],
-      "acceptance-criteria": "Exception handler intercepts API errors. The generate function invokes the GenAI SDK with Fixed aspect_ratio strings.",
-      "test-plan": {
-        "unit": [
-          "Adapter initialization fetches the api_key and correct image model name from config_manager",
-          "generate function delegates effectively to the client wrapper and catches API exceptions"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Image Save And Byte Encoding Logistics",
-      "description": "Implement processing of GenerateImagesResponse to convert bytes to a saved PIL Image.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Extract image bytes generated by Gemini adapter"
-        },
-        {
-          "step": 2,
-          "description": "Load bytes using Pillow Image module"
-        },
-        {
-          "step": 3,
-          "description": "Generate unique filesystem path and save as PNG"
-        }
-      ],
-      "acceptance-criteria": "Adapter successfully intercepts raw bytes, validates against PIL integrity, and commits output to filesystem.",
-      "test-plan": {
-        "unit": [
-          "Mocked GenerateImagesResponse successfully routes byte data through PIL onto simulated directory",
-          "Throws custom ImageGenerationError on invalid/missing byte parsing"
-        ],
-        "integration": [
-          "Generated Image object commits to the filesystem structure with valid .png MIME format"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Verify Module 2 with Integration Script",
-      "description": "Write an automation test file triggering generation on the actual Google backend.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create demo_module2.py in project root"
-        },
-        {
-          "step": 2,
-          "description": "Instantiate the module 2 adapter and invoke the generation interface with dummy outputs from Module 1"
-        }
-      ],
-      "acceptance-criteria": "Script runs end to end and downloads actual imagery successfully based on dummy prompts.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
-        "e2e-manual": [
-          "Execute script against valid key -> verify 1024x1024 generated png is stored on disk properly",
-          "Inspect generated PNG manually to ensure dimensions and file data integrity"
-        ]
-      },
-      "skills": [
-        "verification-before-completion"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Define Pixelization Module Structure and Schemas",
-      "description": "Create directories, interfaces, and Pydantic models for the Pixelization module.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/pixelization and tests/modules/pixelization directories with __init__.py"
-        },
-        {
-          "step": 2,
-          "description": "Define PixelizationInput and PixelizationOutput Pydantic schemas in schemas.py"
-        },
-        {
-          "step": 3,
-          "description": "Define BasePixelization interface class in interface.py"
+          "description": "Define FullPipelineConfig model with fields: user_prompt, input_image_path, start_stage, aspect_ratio, palette_preset, color_count, target_sizes, remove_background, asset_name, output_dir"
         },
         {
           "step": 4,
-          "description": "Create exceptions.py for custom ComfyUI errors like connection and timeout errors"
-        }
-      ],
-      "acceptance-criteria": "Project structure exists for module 3. Schemas validate input image paths. Interface enforces the generate() method.",
-      "test-plan": {
-        "unit": [
-          "PixelizationInput accepts valid local file paths and image byte streams",
-          "BasePixelization abstraction prevents direct instantiation"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Update ConfigManager for ComfyUI Settings",
-      "description": "Extend ConfigManager to support ComfyUI URL and workflow template path configurations.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add COMFYUI_URL and COMFYUI_WORKFLOW_TEMPLATE to .env.example"
-        },
-        {
-          "step": 2,
-          "description": "Update ConfigManager to parse these values, prioritizing runtime args over environment variables"
-        }
-      ],
-      "acceptance-criteria": "ConfigManager returns valid ComfyUI endpoint URLs and template file paths.",
-      "test-plan": {
-        "unit": [
-          "get_comfyui_url defaults to http://127.0.0.1:8188 if none provided",
-          "Runtime arguments override environment variables for comfyui_url"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement ComfyUI API Client",
-      "description": "Develop a lower-level HTTP and WebSocket client to communicate with the ComfyUI API.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create comfyui_client.py to handle HTTP POST /prompt and POST /upload/image"
-        },
-        {
-          "step": 2,
-          "description": "Implement HTTP GET /history and GET /view to retrieve results"
-        },
-        {
-          "step": 3,
-          "description": "Implement WebSocket listener to block and track generation progress by prompt_id"
-        },
-        {
-          "step": 4,
-          "description": "Add configurable timeout logic to prevent infinite hangs"
-        }
-      ],
-      "acceptance-criteria": "Client can successfully upload images, queue workflows, track execution via WebSocket, and download resulting images with explicit timeout limits.",
-      "test-plan": {
-        "unit": [
-          "Client HTTP methods successfully parse 200 OK responses with mock data",
-          "WebSocket listener correctly identifies completion message for specific prompt_id",
-          "Client throws specific ComfyUITimeoutException when generation exceeds timeout"
-        ],
-        "integration": [
-          "Client gracefully handles ConnectionRefusedError when local ComfyUI is offline"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement ComfyUI Adapter Control Logic",
-      "description": "Build the ComfyUIAdapter class to translate inputs into a JSON workflow and orchestrate the API Client.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create comfyui_adapter.py implementing BasePixelization interface"
-        },
-        {
-          "step": 2,
-          "description": "Implement logic to load workflow_api.json template from disk"
-        },
-        {
-          "step": 3,
-          "description": "Inject dynamic variables (uploaded image filename, specific prompts, seed) into fixed Node IDs"
-        },
-        {
-          "step": 4,
-          "description": "Wrap generation execution with logging and map exceptions correctly"
-        }
-      ],
-      "acceptance-criteria": "Adapter successfully coordinates the payload generation, uses the client to execute the task, and returns a verified PixelizationOutput.",
-      "test-plan": {
-        "unit": [
-          "Adapter generates correct workflow JSON with dynamic node values updated",
-          "generate method catches internal client errors and raises adapter-specific exceptions"
-        ],
-        "integration": [
-          "Adapter executes full lifecycle (upload -> prompt -> wait -> download) using a mocked client instance"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Verify Module 3 with Integration Script",
-      "description": "Create a demonstrator script that processes a local image through the full ComfyUI pipeline.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create workflow_api_template.json with a valid ComfyUI Graph containing ControlNet and Checkpoint"
-        },
-        {
-          "step": 2,
-          "description": "Create demo_module3.py to load an image and invoke ComfyUIAdapter"
-        }
-      ],
-      "acceptance-criteria": "Script runs end-to-end against a running local ComfyUI instance and outputs a pixelated image to disk.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
-        "e2e-manual": [
-          "Execute script while ComfyUI is running locally -> verify converted pixel art image is generated in output folder",
-          "Execute script while ComfyUI is stopped -> verify graceful connection error message is printed"
-        ]
-      },
-      "skills": [
-        "verification-before-completion"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Define Post-Processing Module Structure and Schemas",
-      "description": "Create directories, Pydantic schemas, exceptions, and abstract interface for the post-processing module.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/post_processing and tests/modules/post_processing directories with __init__.py"
-        },
-        {
-          "step": 2,
-          "description": "Define PostProcessingInput schema with image_path, asset_name, target_sizes, remove_background, color_count, palette_path, output_dir fields"
-        },
-        {
-          "step": 3,
-          "description": "Define PostProcessingOutput schema with output_paths, target_sizes, color_count, palette_name fields"
-        },
-        {
-          "step": 4,
-          "description": "Create exceptions.py with PostProcessingError, BackgroundRemovalError, ColorQuantizationError, DownscaleError"
+          "description": "Define StageResult model with fields: stage, success, output_path, error_message, duration_seconds"
         },
         {
           "step": 5,
-          "description": "Create interface.py with BasePostProcessor abstract class defining process(input) -> output method"
-        }
-      ],
-      "acceptance-criteria": "Directory structure exists for module 4. PostProcessingInput validates target_sizes as non-empty list of positive integers. PostProcessingInput rejects palette_path and color_count both being None when quantization is implicitly expected. PostProcessingOutput serializes output_paths as list of strings. BasePostProcessor prevents direct instantiation and enforces process method.",
-      "test-plan": {
-        "unit": [
-          "PostProcessingInput accepts valid image_path, asset_name, target_sizes=[32,64], remove_background=True, color_count=16",
-          "PostProcessingInput rejects empty target_sizes list",
-          "PostProcessingInput rejects target_sizes containing non-positive integers",
-          "PostProcessingInput accepts palette_path without color_count (palette mode)",
-          "PostProcessingInput accepts color_count without palette_path (K-Means mode)",
-          "PostProcessingOutput serializes output_paths as list of file path strings",
-          "BasePostProcessor raises TypeError on direct instantiation",
-          "Subclass without process method raises TypeError on instantiation"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Update Dependencies and ConfigManager for Module 4",
-      "description": "Add rembg and scikit-learn to requirements.txt and extend ConfigManager with post-processing default settings.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add rembg, scikit-learn, numpy to requirements.txt"
-        },
-        {
-          "step": 2,
-          "description": "Add POST_PROCESSING_OUTPUT_DIR, DEFAULT_COLOR_COUNT, DEFAULT_TARGET_SIZES, REMBG_MODEL to .env.example"
-        },
-        {
-          "step": 3,
-          "description": "Implement get_post_processing_output_dir method in ConfigManager with default './output/assets'"
-        },
-        {
-          "step": 4,
-          "description": "Implement get_default_color_count method in ConfigManager with default 16"
-        },
-        {
-          "step": 5,
-          "description": "Implement get_default_target_sizes method in ConfigManager returning list of ints with default [32, 64]"
-        }
-      ],
-      "acceptance-criteria": "requirements.txt includes rembg, scikit-learn, numpy. ConfigManager returns default output dir './output/assets' when no override exists. ConfigManager returns default color_count=16. ConfigManager returns default target_sizes=[32,64]. Runtime args override environment variables for all new settings.",
-      "test-plan": {
-        "unit": [
-          "get_post_processing_output_dir returns './output/assets' when no config is set",
-          "get_post_processing_output_dir returns runtime override value when provided",
-          "get_default_color_count returns 16 when no config is set",
-          "get_default_color_count returns integer from environment variable string",
-          "get_default_target_sizes returns [32, 64] when no config is set",
-          "get_default_target_sizes parses comma-separated env string '32,64,128' into int list"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "installing-dependencies"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Background Remover",
-      "description": "Create a BackgroundRemover class wrapping the rembg library to remove image backgrounds and produce alpha-channel PNGs.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/post_processing/background_remover.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement remove method accepting PIL Image and returning PIL Image with RGBA alpha channel"
-        },
-        {
-          "step": 3,
-          "description": "Add configurable rembg model selection (default u2net)"
-        },
-        {
-          "step": 4,
-          "description": "Handle rembg errors and wrap them in BackgroundRemovalError"
-        }
-      ],
-      "acceptance-criteria": "BackgroundRemover.remove accepts an RGB PIL Image and returns an RGBA PIL Image. Output image has identical width and height to input. Alpha channel contains non-trivial values (not all 0 or all 255 for images with backgrounds). Rembg failures raise BackgroundRemovalError with descriptive message.",
-      "test-plan": {
-        "unit": [
-          "remove returns RGBA mode image when given RGB input with mock rembg returning known alpha data",
-          "remove returns RGBA mode image when given RGBA input (already has alpha) with mock rembg",
-          "Output image dimensions match input image dimensions using mock rembg",
-          "remove raises BackgroundRemovalError when rembg throws an internal exception (mocked)",
-          "BackgroundRemover initializes with default model 'u2net' when no model specified",
-          "BackgroundRemover initializes with custom model name when explicitly provided"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "testing-safe-protocol"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Palette Loader",
-      "description": "Create a PaletteLoader class to parse Lospec .hex palette files and provide built-in classic palettes like GB and NES.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/post_processing/palette_loader.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement load_from_hex_file method parsing .hex format (one hex color per line, e.g. 'FF5733')"
-        },
-        {
-          "step": 3,
-          "description": "Implement built-in presets dictionary with GB (4 colors), NES (54 colors), and Sweetie-16 (16 colors) palettes"
-        },
-        {
-          "step": 4,
-          "description": "Implement get_preset method returning palette by name"
-        },
-        {
-          "step": 5,
-          "description": "Validate that loaded palettes contain valid RGB tuples and have at least 2 colors"
-        }
-      ],
-      "acceptance-criteria": "PaletteLoader.load_from_hex_file correctly parses a .hex file into a list of (R, G, B) tuples. Built-in presets return correct color counts (GB=4, Sweetie-16=16). get_preset raises ValueError for unknown preset names. Palette with fewer than 2 colors raises ValueError. Hex strings with invalid characters raise ValueError.",
-      "test-plan": {
-        "unit": [
-          "load_from_hex_file parses '0f380f\\n306230\\n8bac0f\\n9bbc0f' into 4 correct RGB tuples",
-          "load_from_hex_file ignores empty lines and lines starting with '#' (comments)",
-          "load_from_hex_file raises ValueError for hex string with invalid characters like 'ZZZZZZ'",
-          "load_from_hex_file raises ValueError when file contains fewer than 2 valid colors",
-          "get_preset('gb') returns exactly 4 RGB tuples matching Game Boy green palette",
-          "get_preset('sweetie-16') returns exactly 16 RGB tuples",
-          "get_preset('nonexistent') raises ValueError with descriptive message",
-          "All built-in preset colors have R, G, B values in range 0-255"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Color Quantizer",
-      "description": "Create a ColorQuantizer class supporting K-Means auto-color selection and fixed-palette nearest-color mapping while preserving alpha channels.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/post_processing/color_quantizer.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement quantize_kmeans method using scikit-learn KMeans to reduce image to N colors"
-        },
-        {
-          "step": 3,
-          "description": "Implement quantize_palette method mapping each pixel to nearest color in a given palette using Euclidean distance"
-        },
-        {
-          "step": 4,
-          "description": "Implement quantize dispatch method that chooses kmeans or palette mode based on input"
-        },
-        {
-          "step": 5,
-          "description": "Preserve alpha channel during quantization by processing only RGB channels"
+          "description": "Define FullPipelineResult model with fields: stage_results list, final_asset_paths list, total_duration_seconds"
         },
         {
           "step": 6,
-          "description": "Wrap scikit-learn errors in ColorQuantizationError"
+          "description": "Add cross-field validators: user_prompt required when start_stage=PROMPT, input_image_path required when start_stage > PROMPT"
         }
       ],
-      "acceptance-criteria": "quantize_kmeans reduces a multi-color image to exactly N unique colors. quantize_palette maps all pixels to the nearest palette color with zero off-palette colors in output. Alpha channel values are preserved identically before and after quantization. ColorQuantizationError is raised for invalid inputs (N<2, empty palette).",
+      "acceptance-criteria": "PipelineStage enum has exactly 4 members in execution order. FullPipelineConfig requires user_prompt when start_stage is PROMPT. FullPipelineConfig requires input_image_path when start_stage is IMAGE, PIXELIZATION, or POST_PROCESSING. Default values: start_stage=PROMPT, palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True. FullPipelineResult aggregates per-stage results and final asset paths.",
       "test-plan": {
         "unit": [
-          "quantize_kmeans with N=4 on a 10x10 image with 100 random colors produces output with at most 4 unique RGB values",
-          "quantize_kmeans with N=2 on a pure red/blue checkerboard returns exactly red and blue",
-          "quantize_kmeans raises ColorQuantizationError when N < 2",
-          "quantize_palette maps pure red pixel (255,0,0) to nearest palette color in [(200,0,0),(0,200,0),(0,0,200)]",
-          "quantize_palette with GB 4-color palette produces output containing only those 4 colors",
-          "quantize_palette output contains zero colors not present in the input palette",
-          "Alpha channel is preserved: RGBA image with alpha=128 region retains alpha=128 after quantize_kmeans",
-          "Alpha channel is preserved: RGBA image with alpha=0 region retains alpha=0 after quantize_palette",
-          "quantize dispatches to quantize_palette when palette is provided and to quantize_kmeans when only color_count is given"
-        ],
-        "integration": [
-          "ColorQuantizer with palette loaded from PaletteLoader.get_preset('gb') produces output with exactly 4 unique colors"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Implement Nearest Neighbor Downscaler",
-      "description": "Create a Downscaler class using PIL nearest-neighbor interpolation to resize images to exact target pixel dimensions.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create src/modules/post_processing/downscaler.py"
-        },
-        {
-          "step": 2,
-          "description": "Implement downscale method accepting PIL Image and target size, returning square resized image"
-        },
-        {
-          "step": 3,
-          "description": "Implement downscale_multi method accepting a list of target sizes and returning a list of resized images"
-        },
-        {
-          "step": 4,
-          "description": "Validate that only NEAREST resampling is used (never BILINEAR or LANCZOS)"
-        },
-        {
-          "step": 5,
-          "description": "Handle edge cases: target size larger than source, non-square source images"
-        }
-      ],
-      "acceptance-criteria": "downscale produces exact target dimensions (e.g. 32x32). Output uses NEAREST resampling only (no anti-aliased edges). downscale_multi returns correct number of images matching target sizes list. Non-square source images are handled by center-cropping or fitting to square. DownscaleError raised for invalid target sizes (0 or negative).",
-      "test-plan": {
-        "unit": [
-          "downscale of 256x256 RGBA image to 32 produces exactly 32x32 image",
-          "downscale of 512x512 RGB image to 64 produces exactly 64x64 image",
-          "downscale preserves RGBA mode (does not drop alpha channel)",
-          "downscale using a known 4x4 checkerboard pattern scaled to 2x2 produces expected pixel values (no blending)",
-          "downscale_multi with [32, 64, 128] returns list of 3 images with matching dimensions",
-          "downscale raises DownscaleError when target size is 0",
-          "downscale raises DownscaleError when target size is negative",
-          "Non-square 256x128 image downscaled to 32 produces 32x32 output"
+          "PipelineStage enum has members PROMPT, IMAGE, PIXELIZATION, POST_PROCESSING in order",
+          "PipelineStage members compare correctly: PROMPT < IMAGE < PIXELIZATION < POST_PROCESSING",
+          "FullPipelineConfig with start_stage=PROMPT requires user_prompt, rejects None/empty",
+          "FullPipelineConfig with start_stage=PIXELIZATION requires input_image_path, rejects None",
+          "FullPipelineConfig defaults: palette_preset='sweetie-16', target_sizes=[32,64], remove_background=True",
+          "FullPipelineConfig accepts all valid combinations of optional parameters",
+          "StageResult serializes stage name, success flag, output_path, and duration",
+          "FullPipelineResult aggregates multiple StageResult objects and final_asset_paths list"
         ],
         "integration": [],
         "e2e-manual": []
@@ -841,51 +91,102 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": true
+      "complete": false
     },
     {
-      "task": "Implement PostProcessing Pipeline",
-      "description": "Create the PostProcessingPipeline class that orchestrates background removal, color quantization, downscaling, and asset export based on input configuration.",
+      "task": "Implement Artifact Auto-Detector",
+      "description": "Create an ArtifactDetector utility that scans output directories to identify existing pipeline artifacts and recommend the optimal start stage.",
       "steps": [
         {
           "step": 1,
-          "description": "Create src/modules/post_processing/pipeline.py implementing BasePostProcessor"
+          "description": "Create src/modules/full_pipeline/artifact_detector.py"
         },
         {
           "step": 2,
-          "description": "Implement process method loading input image and chaining steps based on PostProcessingInput flags"
+          "description": "Implement scan_output_directory method that checks output/images/ and output/assets/ for existing files"
         },
         {
           "step": 3,
-          "description": "Implement step-skipping logic: skip background removal when remove_background=False, skip quantization when both color_count and palette_path are None"
+          "description": "Implement classification logic: files matching '*pixelized*' pattern belong to PIXELIZATION stage, other images to IMAGE stage, assets to POST_PROCESSING stage"
         },
         {
           "step": 4,
-          "description": "Implement asset naming convention: output files as {asset_name}_{size}x{size}.png"
+          "description": "Implement detect_start_stage method returning the recommended next PipelineStage and the path to the latest relevant artifact"
         },
         {
           "step": 5,
-          "description": "Create output directory if it does not exist"
+          "description": "Handle edge case: empty directories return PROMPT stage with no artifact path"
+        }
+      ],
+      "acceptance-criteria": "ArtifactDetector.detect_start_stage returns PROMPT when no artifacts exist. Returns PIXELIZATION with image path when non-pixelized images are found. Returns POST_PROCESSING with pixelized image path when pixelized images exist. Returns PROMPT when only final assets exist (nothing to skip to). Latest file is chosen by modification time when multiple artifacts exist in same stage.",
+      "test-plan": {
+        "unit": [
+          "detect_start_stage returns (PROMPT, None) when output directories are empty (mocked filesystem)",
+          "detect_start_stage returns (PIXELIZATION, 'output/images/gen_001.png') when non-pixelized image exists (mocked)",
+          "detect_start_stage returns (POST_PROCESSING, 'output/images/pixelized_001.png') when pixelized image exists (mocked)",
+          "detect_start_stage selects latest file by mtime when multiple pixelized images exist (mocked)",
+          "detect_start_stage returns (PROMPT, None) when only output/assets/ files exist (mocked)",
+          "scan_output_directory handles missing directories gracefully without raising exceptions"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Implement Full Pipeline Orchestrator",
+      "description": "Build the FullPipeline class that chains all four modules sequentially with stage-skipping support and artifact auto-detection.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Create src/modules/full_pipeline/orchestrator.py implementing the orchestration logic"
+        },
+        {
+          "step": 2,
+          "description": "Implement initialization accepting ConfigManager and instantiating all four module adapters"
+        },
+        {
+          "step": 3,
+          "description": "Implement run method that accepts FullPipelineConfig and executes stages from start_stage onwards"
+        },
+        {
+          "step": 4,
+          "description": "Implement auto-detect mode: when start_stage is None, use ArtifactDetector to determine entry point"
+        },
+        {
+          "step": 5,
+          "description": "Chain stage outputs: prompt_output.positive_prompt feeds into image_gen, image_output.image_path feeds into pixelization, pixelization_output.image_path feeds into post_processing"
         },
         {
           "step": 6,
-          "description": "Populate PostProcessingOutput with all generated file paths and metadata"
+          "description": "Record StageResult for each executed stage with timing and error info"
+        },
+        {
+          "step": 7,
+          "description": "Handle per-stage errors: catch module exceptions, record failure in StageResult, and abort remaining stages"
         }
       ],
-      "acceptance-criteria": "Pipeline executes full chain (remove bg → quantize → downscale → save) when all options enabled. Pipeline skips background removal when remove_background=False. Pipeline skips color quantization when color_count is None and palette_path is None. Output files follow naming convention '{asset_name}_{size}x{size}.png'. Output directory is auto-created if missing. PostProcessingOutput contains correct list of output_paths matching target_sizes count.",
+      "acceptance-criteria": "FullPipeline.run executes stages PROMPT through POST_PROCESSING in order when start_stage=PROMPT. Pipeline skips stages before start_stage when given explicit start point. Pipeline uses ArtifactDetector when start_stage is None. Each stage output feeds correctly into the next stage input. Stage failures are recorded in StageResult with error messages. Pipeline aborts remaining stages after a failure. FullPipelineResult contains timing data for each executed stage.",
       "test-plan": {
         "unit": [
-          "Pipeline with all steps enabled calls BackgroundRemover, ColorQuantizer, and Downscaler in correct order (mocked components)",
-          "Pipeline with remove_background=False skips BackgroundRemover (mocked, verify not called)",
-          "Pipeline with color_count=None and palette_path=None skips ColorQuantizer (mocked, verify not called)",
-          "Pipeline generates files named '{asset_name}_{size}x{size}.png' for each target_size (mocked filesystem)",
-          "Pipeline creates output_dir if it does not exist (mocked os.makedirs)",
-          "Pipeline returns PostProcessingOutput with output_paths matching number of target_sizes"
+          "run with start_stage=PROMPT calls all four module adapters in sequence (all mocked)",
+          "run with start_stage=PIXELIZATION skips prompt_gen and image_gen adapters (mocked, verify not called)",
+          "run with start_stage=POST_PROCESSING only calls post_processing pipeline (mocked, verify others not called)",
+          "run chains prompt_output.positive_prompt into ImageGenInput.prompt correctly (mocked modules)",
+          "run chains image_output.image_path into PixelizationInput.image_path correctly (mocked modules)",
+          "run chains pixelization_output.image_path into PostProcessingInput.image_path correctly (mocked modules)",
+          "run uses palette_preset='sweetie-16' from config when constructing PostProcessingInput (mocked)",
+          "run records StageResult with success=True and duration for each completed stage (mocked)",
+          "run stops execution and records error when a stage adapter raises an exception (mocked)",
+          "run with start_stage=None invokes ArtifactDetector and uses returned stage and path (mocked detector)"
         ],
         "integration": [
-          "Pipeline with real BackgroundRemover (mocked rembg), real ColorQuantizer, and real Downscaler produces correct-dimension output files on temp filesystem",
-          "Pipeline processes a real 256x256 RGBA test image through full chain and saves to temp directory with correct filenames",
-          "Pipeline with palette_path pointing to a real .hex file quantizes using palette mode via PaletteLoader and ColorQuantizer"
+          "Pipeline correctly constructs ImageGenInput from real PromptOutput schema object",
+          "Pipeline correctly constructs PixelizationInput from real ImageGenOutput schema object",
+          "Pipeline correctly constructs PostProcessingInput from real PixelizationOutput schema object with palette_preset default"
         ],
         "e2e-manual": []
       },
@@ -893,48 +194,108 @@
         "tdd-workflow",
         "systematic-debugging"
       ],
-      "complete": true
+      "complete": false
     },
     {
-      "task": "Verify Module 4 with Integration Script",
-      "description": "Create demo_module4.py to run the full post-processing pipeline on a pixelized image from Module 3 output.",
+      "task": "Implement CLI Entry Point",
+      "description": "Create a main.py with argparse-based CLI that maps command-line arguments to FullPipelineConfig and invokes the orchestrator.",
       "steps": [
         {
           "step": 1,
-          "description": "Create demo_module4.py in project root"
+          "description": "Create main.py at project root with argparse ArgumentParser"
         },
         {
           "step": 2,
-          "description": "Load a pixelized image from output/images directory as input"
+          "description": "Define CLI arguments: --prompt, --input, --start-from, --aspect-ratio, --palette, --colors, --sizes, --no-remove-bg, --asset-name, --output-dir, --auto-detect"
         },
         {
           "step": 3,
-          "description": "Configure PostProcessingInput with representative settings (remove_bg=True, 16 colors, sizes=[32,64])"
+          "description": "Implement argument validation and mapping to FullPipelineConfig"
         },
         {
           "step": 4,
-          "description": "Execute pipeline and print status at each processing stage"
+          "description": "Print stage-by-stage progress messages to stdout during execution"
         },
         {
           "step": 5,
-          "description": "Verify all output files exist and print dimensions and file sizes"
+          "description": "Print final summary: list of output asset paths, total time, any errors"
+        },
+        {
+          "step": 6,
+          "description": "Handle keyboard interrupts and unexpected exceptions gracefully with exit codes"
         }
       ],
-      "acceptance-criteria": "Script runs end-to-end and produces correctly named PNG files in output/assets directory. Output images have exact target dimensions. Output images contain limited color palettes visible on inspection.",
+      "acceptance-criteria": "python main.py --prompt 'a pixel art sword' runs the full pipeline. python main.py --input img.png --start-from post_processing runs only Module 4. python main.py --auto-detect uses ArtifactDetector to choose start stage. --palette accepts preset names ('sweetie-16', 'gb', 'nes') and .hex file paths. --colors N switches to K-Means mode with N colors. Exit code 0 on success, 1 on pipeline error, 2 on argument error. Each executing stage prints a progress line.",
+      "test-plan": {
+        "unit": [
+          "CLI parses --prompt 'test prompt' into FullPipelineConfig with user_prompt='test prompt' and start_stage=PROMPT",
+          "CLI parses --input img.png --start-from pixelization into config with input_image_path and start_stage=PIXELIZATION",
+          "CLI parses --palette sweetie-16 into config with palette_preset='sweetie-16'",
+          "CLI parses --palette /path/to/file.hex into config with palette_path set",
+          "CLI parses --colors 8 into config with color_count=8 and palette_preset=None",
+          "CLI parses --sizes 32 64 128 into config with target_sizes=[32,64,128]",
+          "CLI parses --no-remove-bg into config with remove_background=False",
+          "CLI parses --auto-detect into config with start_stage=None",
+          "CLI raises SystemExit(2) when --prompt is missing and --auto-detect is not set and --input is not set"
+        ],
+        "integration": [
+          "CLI with --prompt invokes FullPipeline.run with correctly mapped FullPipelineConfig (mocked pipeline)",
+          "CLI prints stage progress lines for each StageResult returned by pipeline (mocked pipeline)"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow",
+        "cli-guideline"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Verify Full Pipeline End-to-End",
+      "description": "Run the complete pipeline against real APIs and local ComfyUI to validate the full prompt-to-asset workflow.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Run python main.py --prompt 'a pixel art sword on transparent background' with valid API keys and running ComfyUI"
+        },
+        {
+          "step": 2,
+          "description": "Verify output/assets/ contains {asset_name}_32x32.png and {asset_name}_64x64.png files"
+        },
+        {
+          "step": 3,
+          "description": "Run python main.py --input output/images/latest.png --start-from post_processing to verify stage skipping"
+        },
+        {
+          "step": 4,
+          "description": "Run python main.py --auto-detect to verify artifact detection and auto-resume"
+        },
+        {
+          "step": 5,
+          "description": "Run python main.py --prompt 'test' with ComfyUI stopped to verify graceful error handling"
+        },
+        {
+          "step": 6,
+          "description": "Run all pytest tests to confirm no regressions across the full test suite"
+        }
+      ],
+      "acceptance-criteria": "Full pipeline produces correctly sized pixel art assets in output/assets/ directory. Stage skipping via --start-from and --input works correctly. Auto-detect mode identifies existing artifacts and resumes from correct stage. Pipeline failures produce descriptive error messages and non-zero exit codes. All existing pytest tests pass without modification.",
       "test-plan": {
         "unit": [],
         "integration": [],
         "e2e-manual": [
-          "Execute script with a pixelized source image -> verify 32x32 and 64x64 PNGs are generated in output/assets",
-          "Open output PNGs in image viewer -> verify transparent background (alpha channel) and limited color palette",
-          "Inspect output filenames match pattern '{asset_name}_32x32.png' and '{asset_name}_64x64.png'",
-          "Execute script with remove_background=False -> verify output retains original background"
+          "Run full pipeline with --prompt -> verify 32x32 and 64x64 PNG assets are generated with Sweetie-16 palette colors",
+          "Open output assets in image viewer -> verify transparent background and limited color palette",
+          "Run with --start-from post_processing and existing pixelized image -> verify only Module 4 executes",
+          "Run with --auto-detect after previous run -> verify pipeline resumes from correct stage",
+          "Run with ComfyUI offline -> verify graceful error message at pixelization stage",
+          "Run pytest -> all unit and integration tests pass"
         ]
       },
       "skills": [
         "verification-before-completion"
       ],
-      "complete": true
+      "complete": false
     }
   ]
 }

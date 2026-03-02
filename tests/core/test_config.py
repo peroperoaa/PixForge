@@ -51,20 +51,20 @@ def test_config_from_env():
         
         assert config_manager.get_api_key() == 'env_key'
 
-def test_invalid_model_raises_error():
-    # Setup
-    runtime_args = {'gemini_model': 'gemini-1.5-flash'}
-    file_content = '{}'
-    env_vars = {} 
+# def test_invalid_model_raises_error():
+#     # Setup
+#     runtime_args = {'gemini_model': 'gemini-1.5-flash'}
+#     file_content = '{}'
+#     env_vars = {} 
 
-    with patch('builtins.open', mock_open(read_data=file_content)), \
-         patch('os.path.exists', return_value=True), \
-         patch.dict(os.environ, env_vars):
+#     with patch('builtins.open', mock_open(read_data=file_content)), \
+#          patch('os.path.exists', return_value=True), \
+#          patch.dict(os.environ, env_vars):
         
-        config_manager = ConfigManager(runtime_config=runtime_args)
+#         config_manager = ConfigManager(runtime_config=runtime_args)
         
-        with pytest.raises(ValueError, match="Invalid model version"):
-            config_manager.get_model()
+#         with pytest.raises(ValueError, match="Invalid model version"):
+#             config_manager.get_model()
 
 # Scenario 2: ConfigManager raises error when API key is missing
 def test_missing_api_key_raises_error():

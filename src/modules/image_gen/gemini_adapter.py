@@ -26,9 +26,18 @@ class GeminiImageAdapter(BaseImageGenerator):
         Generate an image using the Gemini API.
         """
         try:
+            # Construct generation config using google-genai SDK
+            generate_config = types.GenerateContentConfig(
+                response_modalities=['IMAGE'],
+                image_config=types.ImageConfig(
+                    aspect_ratio=input_data.aspect_ratio
+                )
+            )
+
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=[input_data.prompt]
+                contents=[input_data.prompt],
+                config=generate_config
             )
 
             generated_image = None
