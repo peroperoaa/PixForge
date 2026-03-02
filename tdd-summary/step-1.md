@@ -1,19 +1,16 @@
-# Step 1 - Understand Intent (Color Quantizer)
+# Step 1 - Understand Intent (Nearest Neighbor Downscaler)
 
 ## Functional Requirements
 
-### FR-1: Palette Loader - Load from .hex File
-PaletteLoader.load_from_hex_file parses Lospec .hex palette files (one hex color per line, e.g. 'FF5733') into a list of (R, G, B) tuples. Empty lines and comment lines (starting with '#') are ignored. Invalid hex strings raise ValueError. Files with fewer than 2 valid colors raise ValueError.
+### FR-1: Downscale Single Image
+Downscaler.downscale accepts a PIL Image and an integer target size, and returns a square image of exactly target_size × target_size pixels using PIL NEAREST resampling. Non-square source images are handled (center-crop to square before scaling). RGBA mode is preserved. Raises DownscaleError for invalid target sizes (0 or negative).
 
-### FR-2: Palette Loader - Built-in Presets
-PaletteLoader provides a built-in presets dictionary containing classic palettes: GB (4 colors), NES (54 colors), and Sweetie-16 (16 colors). All preset colors have R, G, B values in range 0-255.
-
-### FR-3: Palette Loader - Get Preset by Name
-PaletteLoader.get_preset(name) returns a palette (list of RGB tuples) by preset name. Raises ValueError with a descriptive message for unknown preset names.
+### FR-2: Downscale Multiple Sizes
+Downscaler.downscale_multi accepts a PIL Image and a list of integer target sizes, and returns a list of images each resized to the corresponding target size. The returned list length matches the input list length.
 
 ## Assumptions
 
-- .hex file format: one 6-character hex color code per line (no '#' prefix on color lines)
-- Lines starting with '#' are treated as comments and skipped
-- Preset name lookup is case-insensitive (e.g. 'GB' and 'gb' both work)
-- PaletteLoader is a class with static/class methods (no instance state needed)
+- "Target size" is a single integer meaning both width and height (square output).
+- Non-square source images are center-cropped to the largest inscribed square before downscaling.
+- Target size larger than source is allowed (upscale with NEAREST).
+- Image mode (RGB, RGBA, etc.) is preserved through the operation.

@@ -2,6 +2,6 @@
 
 ## Refactorings Completed
 
-- FR-1, FR-2, FR-3: Code already clean and minimal. No structural refactoring needed. Helper function `_hex_to_rgb` is well-separated, presets are declarative, and class methods are static with clear docstrings.
+- FR-1, FR-2: Code already clean and minimal. No structural refactoring needed. `_center_crop_square` helper is well-separated; `downscale_multi` delegates cleanly to `downscale`.
 
 All tests still pass after refactoring. Scenario documents updated.
