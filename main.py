@@ -77,8 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--palette",
         type=str,
-        default="sweetie-16",
-        help="Color palette preset name (sweetie-16, gb, nes) or path to a .hex file (default: sweetie-16)",
+        default=None,
+        help="Color palette preset name (sweetie-16, gb, nes) or path to a .hex file (default: None, no quantization)",
     )
     parser.add_argument(
         "--colors",
@@ -180,14 +180,19 @@ def args_to_config(args: argparse.Namespace) -> FullPipelineConfig:
     start_stage = _resolve_stage(args.start_from, args.auto_detect)
     target_sizes = _parse_sizes(args.sizes)
 
+    config_kwargs: dict = dict(
+        user_prompt=args.prompt,
+        input_image_path=args.input,
+        start_stage=start_stage,
+        aspect_ratio=args.aspect_ratio,
+        color_count=args.colors,
+    )
+    if args.palette is not None:
+        config_kwargs["palette_preset"] = args.palette
+
     try:
         config = FullPipelineConfig(
-            user_prompt=args.prompt,
-            input_image_path=args.input,
-            start_stage=start_stage,
-            aspect_ratio=args.aspect_ratio,
-            palette_preset=args.palette,
-            color_count=args.colors,
+            **config_kwargs,
             target_sizes=target_sizes,
             remove_background=not args.no_remove_bg,
             asset_name=args.asset_name,

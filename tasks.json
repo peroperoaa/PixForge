@@ -142,7 +142,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Change Default Target Sizes to 64 and 128",

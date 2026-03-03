@@ -16,7 +16,7 @@ class FullPipelineConfig(BaseModel):
     input_image_path: Optional[str] = None
     start_stage: Optional[PipelineStage] = PipelineStage.PROMPT
     aspect_ratio: str = "1:1"
-    palette_preset: str = "sweetie-16"
+    palette_preset: Optional[str] = None
     color_count: Optional[int] = None
     target_sizes: list[int] = [32, 64]
     remove_background: bool = True

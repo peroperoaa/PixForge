@@ -11,7 +11,7 @@ class TestFullPipelineConfigDefaults:
         assert config.input_image_path is None
         assert config.start_stage == PipelineStage.PROMPT
         assert config.aspect_ratio == "1:1"
-        assert config.palette_preset == "sweetie-16"
+        assert config.palette_preset is None
         assert config.color_count is None
         assert config.target_sizes == [32, 64]
         assert config.remove_background is True
