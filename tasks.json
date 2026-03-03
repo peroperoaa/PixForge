@@ -1,23 +1,100 @@
 {
   "tasks": [
     {
-      "task": "Upgrade Downscaling Algorithm to BOX",
-      "description": "Change the default downscaling method in Downscaler from NEAREST to BOX to preserve color details and reduce aliasing artifacts.",
+      "task": "Fix Prompt Generator to Preserve User Description",
+      "description": "Rewrite SYSTEM_INSTRUCTION in GeminiAdapter so that the user's text_prompt is treated as a scene description to be expanded, not as an instruction to be interpreted.",
       "steps": [
         {
           "step": 1,
-          "description": "Update src/modules/post_processing/downscaler.py to use Image.BOX instead of Image.NEAREST for downscaling"
+          "description": "Rewrite SYSTEM_INSTRUCTION to explicitly instruct the LLM to incorporate the user's description into the positive_prompt"
         },
         {
           "step": 2,
-          "description": "Update unit tests in tests/modules/post_processing/test_downscaler.py to reflect the new resampling behavior"
+          "description": "Add instruction that the user input describes WHAT to draw and must appear as the core subject in positive_prompt"
+        },
+        {
+          "step": 3,
+          "description": "Write unit tests verifying SYSTEM_INSTRUCTION contains key directives about preserving user description"
         }
       ],
-      "acceptance-criteria": "Downscaler.downscale uses Image.BOX. Tests confirm that downscaling produces expected dimensions and output quality improves (verified via existing test metrics or new visual check).",
+      "acceptance-criteria": "SYSTEM_INSTRUCTION explicitly states user input is a scene description not a command. SYSTEM_INSTRUCTION requires user's subject/description to be the core of positive_prompt. _construct_request passes user text_prompt in contents unchanged. All existing prompt gen tests pass.",
       "test-plan": {
         "unit": [
-          "Downscaler.downscale returns correct size image using Image.BOX",
-          "Downscaler.downscale handles non-square images correctly with center crop before resize"
+          "SYSTEM_INSTRUCTION contains directive to treat user input as scene description",
+          "SYSTEM_INSTRUCTION contains directive to preserve user's subject in positive_prompt",
+          "_construct_request includes user text_prompt in contents list unchanged"
+        ],
+        "integration": [],
+        "e2e-manual": [
+          "Run 'python main.py --prompt \"a fire dragon\" --debug' and verify positive_prompt contains 'fire dragon'"
+        ]
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": true
+    },
+    {
+      "task": "Make Pre-processing Stage Opt-in Instead of Default",
+      "description": "Change pre-processing to be skipped by default and add --pre-process CLI flag to enable it explicitly.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Add --pre-process store_true CLI flag (default False) to build_parser()"
+        },
+        {
+          "step": 2,
+          "description": "In create_pipeline(), conditionally create PreProcessor only when pre_process flag is True"
+        },
+        {
+          "step": 3,
+          "description": "Thread the pre_process flag from args through to create_pipeline via a parameter or config field"
+        },
+        {
+          "step": 4,
+          "description": "Write unit tests verifying pre-processor is None by default and present when --pre-process is passed"
+        }
+      ],
+      "acceptance-criteria": "By default (no --pre-process flag), the pipeline runs without pre-processing (pre_processor is None). When --pre-process is passed, the PreProcessor is created and injected. All existing tests pass without modification.",
+      "test-plan": {
+        "unit": [
+          "parse_args(['--prompt', 'x']) results in args.pre_process == False (default)",
+          "parse_args(['--prompt', 'x', '--pre-process']) results in args.pre_process == True",
+          "Orchestrator run() skips pre-processing when self._pre_processor is None (existing behavior verified)"
+        ],
+        "integration": [
+          "Full pipeline run without --pre-process skips pre-processing stage"
+        ],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Switch Downscaler from NEAREST to BOX Resampling",
+      "description": "Replace Image.NEAREST with Image.BOX in the Downscaler class for area-average downsampling that preserves more detail.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Change Image.NEAREST to Image.BOX in Downscaler.downscale() method"
+        },
+        {
+          "step": 2,
+          "description": "Update docstrings to reflect BOX resampling instead of NEAREST"
+        },
+        {
+          "step": 3,
+          "description": "Update existing unit tests that assert NEAREST behavior to expect BOX behavior"
+        }
+      ],
+      "acceptance-criteria": "Downscaler.downscale() uses Image.BOX for resampling. Docstrings reference BOX not NEAREST. All downscaler tests pass. Output images from post-processing pipeline use BOX resampling.",
+      "test-plan": {
+        "unit": [
+          "Downscaler.downscale() on a 100x100 solid-color image returns correct solid color at 10x10",
+          "Downscaler.downscale() on a 4x4 checkerboard to 2x2 produces averaged colors (not sampled single pixels)",
+          "Downscaler.downscale() with target_size <= 0 still raises DownscaleError"
         ],
         "integration": [],
         "e2e-manual": []
@@ -29,99 +106,118 @@
     },
     {
       "task": "Disable Default Palette Quantization",
-      "description": "Modify FullPipelineConfig to set default palette_preset to None, disabling forced 16-color quantization by default.",
+      "description": "Change palette_preset default from 'sweetie-16' to None so color quantization is skipped unless user explicitly requests it.",
       "steps": [
         {
           "step": 1,
-          "description": "Update FullPipelineConfig in src/modules/full_pipeline/schemas.py to set default palette_preset=None"
+          "description": "Change palette_preset default from 'sweetie-16' to None in FullPipelineConfig"
         },
         {
           "step": 2,
-          "description": "Update main.py CLI argument parser to default --palette to None"
+          "description": "Change --palette CLI argument default from 'sweetie-16' to None in build_parser()"
         },
         {
           "step": 3,
-          "description": "Update unit tests to verify that no palette is applied by default"
-        }
-      ],
-      "acceptance-criteria": "Default configuration has palette_preset=None. Running without --palette argument preserves original colors. Passing --palette still works as before.",
-      "test-plan": {
-        "unit": [
-          "FullPipelineConfig default initialization has palette_preset=None",
-          "args_to_config without --palette flag produces config.palette_preset=None",
-          "PostProcessingPipeline.process without palette inputs skips quantization step"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": false
-    },
-    {
-      "task": "Update Default Target Sizes",
-      "description": "Change the default target sizes from [32, 64] to [64, 128] in FullPipelineConfig and CLI.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Update FullPipelineConfig.target_sizes default value in src/modules/full_pipeline/schemas.py"
-        },
-        {
-          "step": 2,
-          "description": "Update default value for --sizes argument in main.py build_parser"
-        },
-        {
-          "step": 3,
-          "description": "Update relevant tests that rely on default sizes"
-        }
-      ],
-      "acceptance-criteria": "Default output sizes are [64, 128]. CLI help text reflects new defaults.",
-      "test-plan": {
-        "unit": [
-          "FullPipelineConfig default target_sizes is [64, 128]",
-          "main.py --help output shows new default sizes"
-        ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow"
-      ],
-      "complete": false
-    },
-    {
-      "task": "Add No-Post-Processing Option",
-      "description": "Add --no-post-processing CLI flag and configuration option to skip the post-processing stage entirely and output raw pixelization results.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add skip_post_processing boolean field to FullPipelineConfig"
-        },
-        {
-          "step": 2,
-          "description": "Add --no-post-processing flag to main.py build_parser"
-        },
-        {
-          "step": 3,
-          "description": "Update FullPipeline.run in orchestrator.py to check this flag and skip POST_PROCESSING stage if True"
+          "description": "Update args_to_config() to only pass palette_preset when it is not None"
         },
         {
           "step": 4,
-          "description": "Verify orchestrator outputs the pixelization image path as the final result when post-processing is skipped"
+          "description": "Write unit tests verifying no quantization occurs when palette and colors are both None"
         }
       ],
-      "acceptance-criteria": "Passing --no-post-processing skips the post-processing stage. The final output path is the result from the Pixelization stage.",
+      "acceptance-criteria": "FullPipelineConfig.palette_preset defaults to None. CLI --palette defaults to None. When neither --palette nor --colors is provided, PostProcessingPipeline skips color quantization entirely. When --palette sweetie-16 is explicitly passed, quantization works as before. All existing tests pass.",
       "test-plan": {
         "unit": [
-          "FullPipelineConfig accepts skip_post_processing=True",
-          "args_to_config maps --no-post-processing to config.skip_post_processing=True",
-          "FullPipeline.run with skip_post_processing=True breaks loop after PIXELIZATION stage"
+          "FullPipelineConfig() with user_prompt set has palette_preset=None by default",
+          "FullPipelineConfig(palette_preset='sweetie-16') sets palette_preset to 'sweetie-16'",
+          "parse_args(['--prompt', 'x']) results in args.palette == None (default)",
+          "parse_args(['--prompt', 'x', '--palette', 'gb']) results in args.palette == 'gb'",
+          "PostProcessingPipeline.process() with color_count=None and palette_preset=None skips quantization"
         ],
         "integration": [
-          "Run pipeline with --no-post-processing and verify output is the 1024x1024 image from pixelization"
+          "args_to_config with default args produces config.palette_preset=None resulting in no quantization"
         ],
         "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Change Default Target Sizes to 64 and 128",
+      "description": "Update default target_sizes from [32, 64] to [64, 128] in FullPipelineConfig and CLI --sizes argument.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Change target_sizes default from [32, 64] to [64, 128] in FullPipelineConfig"
+        },
+        {
+          "step": 2,
+          "description": "Change --sizes CLI default from '32,64' to '64,128' in build_parser()"
+        },
+        {
+          "step": 3,
+          "description": "Update unit tests that depend on default sizes to reflect new defaults"
+        }
+      ],
+      "acceptance-criteria": "FullPipelineConfig.target_sizes defaults to [64, 128]. CLI --sizes defaults to '64,128'. Users can still override with --sizes 32,64,128. All tests pass.",
+      "test-plan": {
+        "unit": [
+          "FullPipelineConfig() with user_prompt set has target_sizes=[64, 128] by default",
+          "FullPipelineConfig(target_sizes=[32, 64]) overrides to [32, 64]",
+          "parse_args(['--prompt', 'x']) produces sizes == '64,128'",
+          "parse_args(['--prompt', 'x', '--sizes', '32,64,128']) produces sizes == '32,64,128'"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Add --no-post-processing CLI Flag to Skip Post-processing",
+      "description": "Add a --no-post-processing flag that stops the pipeline after PIXELIZATION, outputting the ComfyUI result directly.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Add skip_post_processing: bool = False field to FullPipelineConfig"
+        },
+        {
+          "step": 2,
+          "description": "Add --no-post-processing store_true argument to build_parser()"
+        },
+        {
+          "step": 3,
+          "description": "Map args.no_post_processing to config.skip_post_processing in args_to_config()"
+        },
+        {
+          "step": 4,
+          "description": "In orchestrator run(), skip POST_PROCESSING stage when config.skip_post_processing is True and set final_asset_paths to pixelization output"
+        },
+        {
+          "step": 5,
+          "description": "Write unit tests for flag parsing, config mapping, and pipeline stage skipping"
+        }
+      ],
+      "acceptance-criteria": "When --no-post-processing is passed, pipeline stops after PIXELIZATION. final_asset_paths contains the pixelized image path. POST_PROCESSING does not appear in stage_results. Without flag, pipeline runs all stages as before. All existing tests pass.",
+      "test-plan": {
+        "unit": [
+          "FullPipelineConfig() has skip_post_processing=False by default",
+          "FullPipelineConfig(skip_post_processing=True) sets the field",
+          "parse_args(['--prompt', 'x']) results in args.no_post_processing == False",
+          "parse_args(['--prompt', 'x', '--no-post-processing']) results in args.no_post_processing == True",
+          "run() with skip_post_processing=True and mocked stages skips POST_PROCESSING (not in stage_results)",
+          "run() with skip_post_processing=True sets final_asset_paths to pixelization output path"
+        ],
+        "integration": [
+          "Full pipeline with --no-post-processing from CLI produces config that skips post-processing"
+        ],
+        "e2e-manual": [
+          "Run 'python main.py --prompt \"pixel art cat\" --no-post-processing --debug' and verify only pixelized image is output"
+        ]
       },
       "skills": [
         "tdd-workflow"
