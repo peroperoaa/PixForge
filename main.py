@@ -126,6 +126,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help="Enable debug output for verbose logging and diagnostics",
     )
+    parser.add_argument(
+        "--pre-process",
+        action="store_true",
+        default=False,
+        dest="pre_process",
+        help="Enable pre-processing stage (crop/resize) between image generation and pixelization",
+    )
 
     return parser
 
@@ -194,15 +201,23 @@ def args_to_config(args: argparse.Namespace) -> FullPipelineConfig:
     return config
 
 
-def create_pipeline() -> FullPipeline:
+def create_pipeline(pre_process: bool = False) -> FullPipeline:
     """Create a FullPipeline instance with real adapters.
 
     This is the production factory — tests mock this function.
+
+    Args:
+        pre_process: When True, create and inject a PreProcessor instance.
     """
     from src.modules.prompt_gen.gemini_adapter import GeminiAdapter
     from src.modules.image_gen.gemini_adapter import GeminiImageAdapter
     from src.modules.pixelization.comfyui_adapter import ComfyUIAdapter
     from src.modules.post_processing.pipeline import PostProcessingPipeline
+
+    pre_processor = None
+    if pre_process:
+        from src.modules.pre_processing.pipeline import PreProcessor
+        pre_processor = PreProcessor()
 
     config_manager = ConfigManager()
     return FullPipeline(
@@ -211,6 +226,7 @@ def create_pipeline() -> FullPipeline:
         image_generator=GeminiImageAdapter(config_manager),
         pixelizer=ComfyUIAdapter(config_manager),
         post_processor=PostProcessingPipeline(),
+        pre_processor=pre_processor,
     )
 
 
@@ -247,14 +263,18 @@ def _print_stage_progress(result: FullPipelineResult) -> None:
             print(f"  {sr.stage.name}: {sr.error_message}")
 
 
-def run_pipeline(config: FullPipelineConfig) -> int:
+def run_pipeline(config: FullPipelineConfig, pre_process: bool = False) -> int:
     """Run the pipeline and print progress.
+
+    Args:
+        config: Pipeline configuration.
+        pre_process: When True, enable pre-processing stage.
 
     Returns:
         Exit code: 0 on success, 1 on pipeline error, 130 on keyboard interrupt.
     """
     try:
-        pipeline = create_pipeline()
+        pipeline = create_pipeline(pre_process=pre_process)
         result = pipeline.run(config)
         _print_stage_progress(result)
 
@@ -285,7 +305,7 @@ def main() -> int:
     except SystemExit as exc:
         return exc.code if isinstance(exc.code, int) else 2
 
-    return run_pipeline(config)
+    return run_pipeline(config, pre_process=args.pre_process)
 
 
 if __name__ == "__main__":

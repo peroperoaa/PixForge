@@ -70,7 +70,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Switch Downscaler from NEAREST to BOX Resampling",
