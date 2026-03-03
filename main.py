@@ -89,8 +89,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--sizes",
         type=str,
-        default="32,64",
-        help="Comma-separated target asset sizes in pixels (default: 32,64)",
+        default="64,128",
+        help="Comma-separated target asset sizes in pixels (default: 64,128)",
     )
     parser.add_argument(
         "--no-remove-bg",

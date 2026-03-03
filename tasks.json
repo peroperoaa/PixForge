@@ -175,7 +175,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Add --no-post-processing CLI Flag to Skip Post-processing",

@@ -18,7 +18,7 @@ class FullPipelineConfig(BaseModel):
     aspect_ratio: str = "1:1"
     palette_preset: Optional[str] = None
     color_count: Optional[int] = None
-    target_sizes: list[int] = [32, 64]
+    target_sizes: list[int] = [64, 128]
     remove_background: bool = True
     intermediate_size: int = 256
     asset_name: Optional[str] = None

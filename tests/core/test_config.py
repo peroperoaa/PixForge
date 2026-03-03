@@ -290,7 +290,7 @@ def test_default_target_sizes_default():
          patch.dict(os.environ, env_vars, clear=True):
         
         config_manager = ConfigManager(runtime_config=runtime_args)
-        assert config_manager.get_default_target_sizes() == [32, 64]
+        assert config_manager.get_default_target_sizes() == [64, 128]
 
 def test_default_target_sizes_from_env_string():
     """Parses comma-separated env string '32,64,128' into int list."""

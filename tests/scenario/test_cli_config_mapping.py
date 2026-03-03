@@ -113,7 +113,7 @@ class TestArgsToConfigMapping:
     def test_sizes_default(self):
         args = self.parser.parse_args(["--prompt", "sword"])
         config = args_to_config(args)
-        assert config.target_sizes == [32, 64]
+        assert config.target_sizes == [64, 128]
 
     # Aspect ratio
     def test_aspect_ratio(self):

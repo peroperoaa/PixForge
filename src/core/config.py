@@ -120,7 +120,7 @@ class ConfigManager:
         if env_val:
             return [int(x.strip()) for x in env_val.split(',')]
 
-        return [32, 64]
+        return [64, 128]
 
     def get_rembg_model(self) -> str:
         """Retrieve rembg model name with priority logic."""

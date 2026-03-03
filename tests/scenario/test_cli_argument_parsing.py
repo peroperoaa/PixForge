@@ -50,7 +50,7 @@ class TestCLIArgumentParsing:
         assert args.aspect_ratio == "1:1"
         assert args.palette is None
         assert args.colors is None
-        assert args.sizes == "32,64"
+        assert args.sizes == "64,128"
         assert args.no_remove_bg is False
         assert args.asset_name is None
         assert args.output_dir is None

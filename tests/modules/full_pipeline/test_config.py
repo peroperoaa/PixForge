@@ -13,7 +13,7 @@ class TestFullPipelineConfigDefaults:
         assert config.aspect_ratio == "1:1"
         assert config.palette_preset is None
         assert config.color_count is None
-        assert config.target_sizes == [32, 64]
+        assert config.target_sizes == [64, 128]
         assert config.remove_background is True
         assert config.asset_name is None
         assert config.output_dir is None
