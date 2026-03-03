@@ -1,25 +1,23 @@
 {
   "tasks": [
     {
-      "task": "Add Debug Field to FullPipelineConfig Schema",
-      "description": "Add a debug boolean field (default False) to FullPipelineConfig in the full_pipeline schemas module.",
+      "task": "Upgrade Downscaling Algorithm to BOX",
+      "description": "Change the default downscaling method in Downscaler from NEAREST to BOX to preserve color details and reduce aliasing artifacts.",
       "steps": [
         {
           "step": 1,
-          "description": "Add 'debug: bool = False' field to FullPipelineConfig in src/modules/full_pipeline/schemas.py"
+          "description": "Update src/modules/post_processing/downscaler.py to use Image.BOX instead of Image.NEAREST for downscaling"
         },
         {
           "step": 2,
-          "description": "Write unit tests verifying the new field's default value and explicit True/False assignment"
+          "description": "Update unit tests in tests/modules/post_processing/test_downscaler.py to reflect the new resampling behavior"
         }
       ],
-      "acceptance-criteria": "FullPipelineConfig accepts debug=True and debug=False. Default value is False. Existing model_validator and all current tests remain unaffected.",
+      "acceptance-criteria": "Downscaler.downscale uses Image.BOX. Tests confirm that downscaling produces expected dimensions and output quality improves (verified via existing test metrics or new visual check).",
       "test-plan": {
         "unit": [
-          "FullPipelineConfig() with user_prompt set has debug=False by default",
-          "FullPipelineConfig(debug=True, user_prompt='test') sets debug to True",
-          "FullPipelineConfig(debug=False, user_prompt='test') sets debug to False",
-          "All existing FullPipelineConfig tests still pass without modification"
+          "Downscaler.downscale returns correct size image using Image.BOX",
+          "Downscaler.downscale handles non-square images correctly with center crop before resize"
         ],
         "integration": [],
         "e2e-manual": []
@@ -27,104 +25,108 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": true
+      "complete": false
     },
     {
-      "task": "Add --debug Flag to CLI Parser and Config Mapping",
-      "description": "Add --debug store_true argument to build_parser() and map it to FullPipelineConfig.debug in args_to_config().",
+      "task": "Disable Default Palette Quantization",
+      "description": "Modify FullPipelineConfig to set default palette_preset to None, disabling forced 16-color quantization by default.",
       "steps": [
         {
           "step": 1,
-          "description": "Add --debug argument to build_parser() with action='store_true', default=False, help text explaining debug output"
+          "description": "Update FullPipelineConfig in src/modules/full_pipeline/schemas.py to set default palette_preset=None"
         },
         {
           "step": 2,
-          "description": "Pass args.debug to FullPipelineConfig constructor in args_to_config()"
+          "description": "Update main.py CLI argument parser to default --palette to None"
         },
         {
           "step": 3,
-          "description": "Write unit tests for --debug flag parsing and config mapping"
+          "description": "Update unit tests to verify that no palette is applied by default"
         }
       ],
-      "acceptance-criteria": "build_parser() recognizes --debug flag. args.debug defaults to False. When --debug is passed, args.debug is True. args_to_config() maps args.debug to config.debug=True. All existing CLI argument parsing and config mapping tests pass.",
+      "acceptance-criteria": "Default configuration has palette_preset=None. Running without --palette argument preserves original colors. Passing --palette still works as before.",
       "test-plan": {
         "unit": [
-          "parse_args(['--prompt', 'x']) results in args.debug == False (default)",
-          "parse_args(['--prompt', 'x', '--debug']) results in args.debug == True",
-          "args_to_config with debug=True produces FullPipelineConfig with debug=True (mocked args namespace)",
-          "args_to_config with debug=False produces FullPipelineConfig with debug=False (mocked args namespace)",
-          "All existing CLI argument parsing tests pass without modification"
+          "FullPipelineConfig default initialization has palette_preset=None",
+          "args_to_config without --palette flag produces config.palette_preset=None",
+          "PostProcessingPipeline.process without palette inputs skips quantization step"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Update Default Target Sizes",
+      "description": "Change the default target sizes from [32, 64] to [64, 128] in FullPipelineConfig and CLI.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Update FullPipelineConfig.target_sizes default value in src/modules/full_pipeline/schemas.py"
+        },
+        {
+          "step": 2,
+          "description": "Update default value for --sizes argument in main.py build_parser"
+        },
+        {
+          "step": 3,
+          "description": "Update relevant tests that rely on default sizes"
+        }
+      ],
+      "acceptance-criteria": "Default output sizes are [64, 128]. CLI help text reflects new defaults.",
+      "test-plan": {
+        "unit": [
+          "FullPipelineConfig default target_sizes is [64, 128]",
+          "main.py --help output shows new default sizes"
+        ],
+        "integration": [],
+        "e2e-manual": []
+      },
+      "skills": [
+        "tdd-workflow"
+      ],
+      "complete": false
+    },
+    {
+      "task": "Add No-Post-Processing Option",
+      "description": "Add --no-post-processing CLI flag and configuration option to skip the post-processing stage entirely and output raw pixelization results.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Add skip_post_processing boolean field to FullPipelineConfig"
+        },
+        {
+          "step": 2,
+          "description": "Add --no-post-processing flag to main.py build_parser"
+        },
+        {
+          "step": 3,
+          "description": "Update FullPipeline.run in orchestrator.py to check this flag and skip POST_PROCESSING stage if True"
+        },
+        {
+          "step": 4,
+          "description": "Verify orchestrator outputs the pixelization image path as the final result when post-processing is skipped"
+        }
+      ],
+      "acceptance-criteria": "Passing --no-post-processing skips the post-processing stage. The final output path is the result from the Pixelization stage.",
+      "test-plan": {
+        "unit": [
+          "FullPipelineConfig accepts skip_post_processing=True",
+          "args_to_config maps --no-post-processing to config.skip_post_processing=True",
+          "FullPipeline.run with skip_post_processing=True breaks loop after PIXELIZATION stage"
         ],
         "integration": [
-          "build_parser + args_to_config chain: '--prompt test --debug' produces config.debug=True from real parser"
+          "Run pipeline with --no-post-processing and verify output is the 1024x1024 image from pixelization"
         ],
         "e2e-manual": []
       },
       "skills": [
         "tdd-workflow"
       ],
-      "complete": true
-    },
-    {
-      "task": "Add Debug Output to Pipeline Orchestrator",
-      "description": "Print debug information (prompts, intermediate paths) to stdout in the orchestrator run() method when config.debug is True.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Create a _debug_print(config, message) helper method that prints '[DEBUG] message' only when config.debug is True"
-        },
-        {
-          "step": 2,
-          "description": "After PROMPT stage success: print positive_prompt, negative_prompt, and style_parameters"
-        },
-        {
-          "step": 3,
-          "description": "After IMAGE stage success: print generated image path"
-        },
-        {
-          "step": 4,
-          "description": "After PRE_PROCESSING success (if run): print pre-processed image path"
-        },
-        {
-          "step": 5,
-          "description": "After PIXELIZATION stage success: print pixelized image path"
-        },
-        {
-          "step": 6,
-          "description": "After POST_PROCESSING stage success: print all output asset paths"
-        },
-        {
-          "step": 7,
-          "description": "Write unit tests verifying debug output appears in captured stdout when debug=True and is absent when debug=False"
-        }
-      ],
-      "acceptance-criteria": "When config.debug=True, stdout contains '[DEBUG]' lines showing: positive_prompt, negative_prompt, style_parameters after PROMPT stage; image path after IMAGE stage; pre-processed path after PRE_PROCESSING; pixelized path after PIXELIZATION; asset paths after POST_PROCESSING. When config.debug=False, no '[DEBUG]' lines appear in stdout. All existing orchestrator tests pass.",
-      "test-plan": {
-        "unit": [
-          "_debug_print with debug=True config prints '[DEBUG] message' to stdout (capsys capture)",
-          "_debug_print with debug=False config prints nothing to stdout (capsys capture)",
-          "run() with debug=True and mocked PROMPT stage prints positive_prompt containing expected text",
-          "run() with debug=True and mocked PROMPT stage prints negative_prompt containing expected text",
-          "run() with debug=True and mocked PROMPT stage prints style_parameters dict",
-          "run() with debug=True and mocked IMAGE stage prints image path",
-          "run() with debug=True and mocked PIXELIZATION stage prints pixelized image path",
-          "run() with debug=True and mocked POST_PROCESSING stage prints output asset paths",
-          "run() with debug=False and mocked stages produces zero '[DEBUG]' lines in stdout",
-          "All existing orchestrator tests pass without modification"
-        ],
-        "integration": [
-          "Full pipeline run with debug=True and all stages mocked produces complete debug output sequence in correct order",
-          "Full pipeline run from main.py CLI '--prompt test --debug' with mocked adapters prints debug info to stdout"
-        ],
-        "e2e-manual": [
-          "Run 'python main.py --prompt \"pixel art sword\" --debug' against real APIs and visually verify debug output shows prompts and file paths"
-        ]
-      },
-      "skills": [
-        "tdd-workflow",
-        "testing-safe-protocol"
-      ],
-      "complete": true
+      "complete": false
     }
   ]
 }
