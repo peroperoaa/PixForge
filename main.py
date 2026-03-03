@@ -133,6 +133,13 @@ def build_parser() -> argparse.ArgumentParser:
         dest="pre_process",
         help="Enable pre-processing stage (crop/resize) between image generation and pixelization",
     )
+    parser.add_argument(
+        "--no-post-processing",
+        action="store_true",
+        default=False,
+        dest="no_post_processing",
+        help="Skip post-processing stage, output the pixelized image directly",
+    )
 
     return parser
 
@@ -198,6 +205,7 @@ def args_to_config(args: argparse.Namespace) -> FullPipelineConfig:
             asset_name=args.asset_name,
             output_dir=args.output_dir,
             debug=args.debug,
+            skip_post_processing=args.no_post_processing,
         )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)

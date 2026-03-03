@@ -86,6 +86,10 @@ class FullPipeline:
             if stage < start_stage:
                 continue
 
+            # Skip POST_PROCESSING when configured
+            if stage == PipelineStage.POST_PROCESSING and config.skip_post_processing:
+                break
+
             stage_start = time.monotonic()
             try:
                 if stage == PipelineStage.PROMPT:
@@ -111,6 +115,9 @@ class FullPipeline:
                     result_output = self._run_pixelization(current_image_path, current_prompt)
                     current_image_path = result_output.image_path
                     output_path = result_output.image_path
+                    # When skipping post-processing, set final output here
+                    if config.skip_post_processing:
+                        final_asset_paths = [result_output.image_path]
 
                 elif stage == PipelineStage.POST_PROCESSING:
                     assert current_image_path is not None

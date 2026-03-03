@@ -24,6 +24,7 @@ class FullPipelineConfig(BaseModel):
     asset_name: Optional[str] = None
     output_dir: Optional[str] = None
     debug: bool = False
+    skip_post_processing: bool = False
 
     @model_validator(mode="after")
     def validate_stage_requirements(self) -> "FullPipelineConfig":
