@@ -27,7 +27,7 @@ class ComfyUIAdapter(BasePixelization):
     NODE_SAVE_IMAGE = "9"
 
     # Pixel-art prefix prepended to every upstream prompt
-    PIXEL_ART_PREFIX = "pixel art, clean edges, limited palette, "
+    PIXEL_ART_PREFIX = "pixel art, well-defined facial features, clean linework， "
 
     def __init__(
         self,

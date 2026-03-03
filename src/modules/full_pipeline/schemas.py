@@ -23,6 +23,7 @@ class FullPipelineConfig(BaseModel):
     intermediate_size: int = 256
     asset_name: Optional[str] = None
     output_dir: Optional[str] = None
+    debug: bool = False
 
     @model_validator(mode="after")
     def validate_stage_requirements(self) -> "FullPipelineConfig":

@@ -20,7 +20,6 @@ class GeminiAdapter(BasePromptGenerator):
         "The positive prompt MUST include these pixel-art directives: "
         "centered subject composition, simple background or transparent background, "
         "clear outlines, and a front view or 3/4 view angle. "
-        "The positive prompt should also emphasize limited detail, flat colors, and crisp edges "
         "suitable for pixel art rendering. "
         "The negative prompt MUST include common pixel-art anti-patterns such as: "
         "photorealistic, blurry, gradient shading, excessive detail, complex background. "

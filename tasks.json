@@ -1,33 +1,25 @@
 {
   "tasks": [
     {
-      "task": "Optimize Prompt Generator System Instruction for Pixel Art",
-      "description": "Update the GeminiAdapter system_instruction to constrain generated prompts for pixel-art-friendly compositions: centered character, simple or transparent background, clear outlines, front or 3/4 view.",
+      "task": "Add Debug Field to FullPipelineConfig Schema",
+      "description": "Add a debug boolean field (default False) to FullPipelineConfig in the full_pipeline schemas module.",
       "steps": [
         {
           "step": 1,
-          "description": "Read current system_instruction in src/modules/prompt_gen/gemini_adapter.py"
+          "description": "Add 'debug: bool = False' field to FullPipelineConfig in src/modules/full_pipeline/schemas.py"
         },
         {
           "step": 2,
-          "description": "Replace system_instruction with pixel-art-optimized version emphasizing centered subject, simple background, clean outlines, limited detail"
-        },
-        {
-          "step": 3,
-          "description": "Add pixel-art constraint guidance to the PromptOutput style_parameters schema documentation"
-        },
-        {
-          "step": 4,
-          "description": "Update unit tests to verify the new system instruction content"
+          "description": "Write unit tests verifying the new field's default value and explicit True/False assignment"
         }
       ],
-      "acceptance-criteria": "system_instruction contains pixel-art-specific constraints: 'centered', 'simple background' or 'transparent background', 'clear outlines', 'front view' or '3/4 view'. Generated PromptOutput.positive_prompt includes pixel-art-friendly directives. All existing prompt_gen tests pass.",
+      "acceptance-criteria": "FullPipelineConfig accepts debug=True and debug=False. Default value is False. Existing model_validator and all current tests remain unaffected.",
       "test-plan": {
         "unit": [
-          "system_instruction string contains 'centered' and 'simple background' or 'transparent background' keywords",
-          "system_instruction string contains 'pixel art' and 'clean outlines' keywords",
-          "_construct_request returns config with updated system_instruction (mocked client)",
-          "All existing prompt_gen unit tests still pass without modification"
+          "FullPipelineConfig() with user_prompt set has debug=False by default",
+          "FullPipelineConfig(debug=True, user_prompt='test') sets debug to True",
+          "FullPipelineConfig(debug=False, user_prompt='test') sets debug to False",
+          "All existing FullPipelineConfig tests still pass without modification"
         ],
         "integration": [],
         "e2e-manual": []
@@ -38,237 +30,101 @@
       "complete": true
     },
     {
-      "task": "Create Image Pre-Processor Module",
-      "description": "Create a new pre_processing module with background removal on high-res image, subject-aware cropping, and LANCZOS downscale to intermediate resolution (default 256px) before pixelization.",
+      "task": "Add --debug Flag to CLI Parser and Config Mapping",
+      "description": "Add --debug store_true argument to build_parser() and map it to FullPipelineConfig.debug in args_to_config().",
       "steps": [
         {
           "step": 1,
-          "description": "Create src/modules/pre_processing/ directory with __init__.py, schemas.py, interface.py, exceptions.py"
+          "description": "Add --debug argument to build_parser() with action='store_true', default=False, help text explaining debug output"
         },
         {
           "step": 2,
-          "description": "Define PreProcessingInput schema with fields: image_path, remove_background, intermediate_size (default 256), crop_mode"
+          "description": "Pass args.debug to FullPipelineConfig constructor in args_to_config()"
         },
         {
           "step": 3,
-          "description": "Define PreProcessingOutput schema with fields: image_path, original_size, intermediate_size"
-        },
-        {
-          "step": 4,
-          "description": "Implement PreProcessor class with process() method: load image, optionally remove background, crop to square, downscale to intermediate_size using LANCZOS, save and return"
-        },
-        {
-          "step": 5,
-          "description": "Implement subject-aware cropping: use alpha channel bounding box when available, fallback to center crop"
-        },
-        {
-          "step": 6,
-          "description": "Create unit tests under tests/modules/pre_processing/"
+          "description": "Write unit tests for --debug flag parsing and config mapping"
         }
       ],
-      "acceptance-criteria": "PreProcessor.process takes a high-res image path and returns a path to an intermediate-resolution square image. When remove_background=True, background is removed before cropping. Subject-aware crop uses alpha bounding box to center the subject. LANCZOS resampling produces smooth intermediate image. intermediate_size defaults to 256. All tests pass.",
+      "acceptance-criteria": "build_parser() recognizes --debug flag. args.debug defaults to False. When --debug is passed, args.debug is True. args_to_config() maps args.debug to config.debug=True. All existing CLI argument parsing and config mapping tests pass.",
       "test-plan": {
         "unit": [
-          "PreProcessingInput accepts valid fields with defaults: intermediate_size=256, crop_mode='center', remove_background=True",
-          "PreProcessingInput rejects intermediate_size <= 0",
-          "process() with remove_background=True calls BackgroundRemover.remove (mocked) then crops and downscales",
-          "process() with remove_background=False skips background removal, performs crop and downscale only (mocked image)",
-          "Subject-aware crop extracts alpha bounding box and centers subject in square canvas (synthetic RGBA test image)",
-          "Subject-aware crop falls back to center crop when image has no alpha channel (synthetic RGB test image)",
-          "Downscale to intermediate_size uses LANCZOS resampling and outputs exact square dimensions (synthetic image)",
-          "process() saves output image to expected path and returns correct PreProcessingOutput fields"
+          "parse_args(['--prompt', 'x']) results in args.debug == False (default)",
+          "parse_args(['--prompt', 'x', '--debug']) results in args.debug == True",
+          "args_to_config with debug=True produces FullPipelineConfig with debug=True (mocked args namespace)",
+          "args_to_config with debug=False produces FullPipelineConfig with debug=False (mocked args namespace)",
+          "All existing CLI argument parsing tests pass without modification"
         ],
-        "integration": [],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "testing-safe-protocol"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Optimize ComfyUI Workflow Parameters",
-      "description": "Tune the ComfyUI workflow template for low-resolution pixel art conversion: reduce denoise to 0.32, lower ControlNet strength to 0.65, and make the positive prompt dynamically injected with pixel-art prefix.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Update workflow_api_template.json: set denoise to 0.32, ControlNet strength to 0.65"
-        },
-        {
-          "step": 2,
-          "description": "Replace hardcoded positive prompt text with a generic placeholder that will be overridden at runtime"
-        },
-        {
-          "step": 3,
-          "description": "Update negative prompt to include 'deformed, bad anatomy, extra limbs, mutation' for character preservation"
-        },
-        {
-          "step": 4,
-          "description": "Update ComfyUIAdapter._build_workflow to always inject the upstream prompt into the positive text node"
-        },
-        {
-          "step": 5,
-          "description": "Add pixel-art prefix to injected prompt: prepend 'pixel art, clean edges, limited palette, ' before the upstream prompt"
-        },
-        {
-          "step": 6,
-          "description": "Update existing pixelization unit tests for new parameter values"
-        }
-      ],
-      "acceptance-criteria": "workflow_api_template.json has denoise=0.32 and ControlNet strength=0.65. Positive prompt node text is overridden at runtime by prepending 'pixel art, clean edges, limited palette, ' to the upstream prompt. Negative prompt includes anatomy-preserving terms. All pixelization tests pass.",
-      "test-plan": {
-        "unit": [
-          "_build_workflow sets denoise to 0.32 in KSampler node when no override provided (loaded template)",
-          "_build_workflow sets ControlNet strength to 0.65 in ControlNetApply node (loaded template)",
-          "_build_workflow injects 'pixel art, clean edges, limited palette, {prompt}' into positive CLIPTextEncode node when prompt is provided",
-          "_build_workflow preserves default positive text when prompt is None",
-          "Negative prompt node contains 'deformed' and 'bad anatomy' keywords (loaded template)",
-          "All existing pixelization unit tests pass without modification"
+        "integration": [
+          "build_parser + args_to_config chain: '--prompt test --debug' produces config.debug=True from real parser"
         ],
-        "integration": [],
         "e2e-manual": []
       },
       "skills": [
         "tdd-workflow"
       ],
-      "complete": true
+      "complete": false
     },
     {
-      "task": "Fix Post-Processing Pipeline Order: Downscale Before Quantize",
-      "description": "Reverse the post-processing step order from quantize-then-downscale to downscale-then-quantize, ensuring color palette is applied at final target resolution with no sub-pixel color mixing.",
+      "task": "Add Debug Output to Pipeline Orchestrator",
+      "description": "Print debug information (prompts, intermediate paths) to stdout in the orchestrator run() method when config.debug is True.",
       "steps": [
         {
           "step": 1,
-          "description": "In PostProcessingPipeline.process(), move the downscale loop before color quantization"
+          "description": "Create a _debug_print(config, message) helper method that prints '[DEBUG] message' only when config.debug is True"
         },
         {
           "step": 2,
-          "description": "Apply color quantization individually to each downscaled image at target resolution"
+          "description": "After PROMPT stage success: print positive_prompt, negative_prompt, and style_parameters"
         },
         {
           "step": 3,
-          "description": "Remove background removal from PostProcessingPipeline since it is now handled in pre-processing stage"
+          "description": "After IMAGE stage success: print generated image path"
         },
         {
           "step": 4,
-          "description": "Keep remove_background field in schema for backward compatibility but log a deprecation warning when used"
+          "description": "After PRE_PROCESSING success (if run): print pre-processed image path"
         },
         {
           "step": 5,
-          "description": "Update unit and integration tests to verify new order: downscale first, then quantize"
-        }
-      ],
-      "acceptance-criteria": "PostProcessingPipeline processes each target size by: (1) downscale to target_size, (2) quantize at target resolution. Color quantization happens on the small image, guaranteeing no intermediate colors from resampling. Background removal in PostProcessingPipeline logs deprecation warning. All pipeline tests pass with new order.",
-      "test-plan": {
-        "unit": [
-          "process() calls downscaler.downscale BEFORE color_quantizer.quantize for each target size (mocked, verify call order)",
-          "process() calls quantize on each individual downscaled image, not on the original large image (mocked, verify arguments)",
-          "process() with remove_background=True logs deprecation warning and still calls BackgroundRemover (mocked)",
-          "process() with remove_background=False does not call BackgroundRemover (mocked)",
-          "Output images at each target size have exactly palette colors after quantization (synthetic test image with known palette)"
-        ],
-        "integration": [
-          "Full post-processing chain with real Downscaler and ColorQuantizer: 256px input downscaled to 32px then quantized to sweetie-16 palette has at most 16 unique RGB colors",
-          "Full post-processing chain: 256px input downscaled to 64px then quantized to gb palette has at most 4 unique RGB colors"
-        ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "testing-safe-protocol"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Integrate Pre-Processing into Orchestrator",
-      "description": "Update the FullPipeline orchestrator to run pre-processing between IMAGE and PIXELIZATION stages, feeding the 256px image into ComfyUI instead of the original 1024px image.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Add PreProcessor as a dependency to FullPipeline.__init__"
-        },
-        {
-          "step": 2,
-          "description": "Add intermediate_size field to FullPipelineConfig with default 256"
-        },
-        {
-          "step": 3,
-          "description": "Insert pre-processing call after IMAGE stage output: remove background, crop subject, downscale to intermediate_size"
-        },
-        {
-          "step": 4,
-          "description": "Pass pre-processed 256px image path to PIXELIZATION stage instead of original 1024px image"
-        },
-        {
-          "step": 5,
-          "description": "Disable remove_background in POST_PROCESSING stage since it is now handled in pre-processing"
+          "description": "After PIXELIZATION stage success: print pixelized image path"
         },
         {
           "step": 6,
-          "description": "Update orchestrator unit tests to verify pre-processing is called between IMAGE and PIXELIZATION"
+          "description": "After POST_PROCESSING stage success: print all output asset paths"
+        },
+        {
+          "step": 7,
+          "description": "Write unit tests verifying debug output appears in captured stdout when debug=True and is absent when debug=False"
         }
       ],
-      "acceptance-criteria": "FullPipeline.run inserts pre-processing between IMAGE and PIXELIZATION. Pre-processing removes background, crops subject, and downscales to intermediate_size (default 256). PIXELIZATION receives 256px image. POST_PROCESSING receives ComfyUI output without re-running background removal. All orchestrator tests pass.",
+      "acceptance-criteria": "When config.debug=True, stdout contains '[DEBUG]' lines showing: positive_prompt, negative_prompt, style_parameters after PROMPT stage; image path after IMAGE stage; pre-processed path after PRE_PROCESSING; pixelized path after PIXELIZATION; asset paths after POST_PROCESSING. When config.debug=False, no '[DEBUG]' lines appear in stdout. All existing orchestrator tests pass.",
       "test-plan": {
         "unit": [
-          "run with start_stage=PROMPT calls pre_processor.process after image_generator and before pixelizer (all mocked, verify call order)",
-          "Pre-processor receives image_generator output path and remove_background=True from config (mocked)",
-          "Pixelizer receives pre_processor output path (256px), not image_generator output path (1024px) (mocked)",
-          "Post-processing is called with remove_background=False regardless of config.remove_background (mocked)",
-          "FullPipelineConfig accepts intermediate_size=256 as default",
-          "run with start_stage=PIXELIZATION skips pre-processing (mocked, verify pre_processor not called)",
-          "run with start_stage=POST_PROCESSING skips both pre-processing and pixelization (mocked)"
+          "_debug_print with debug=True config prints '[DEBUG] message' to stdout (capsys capture)",
+          "_debug_print with debug=False config prints nothing to stdout (capsys capture)",
+          "run() with debug=True and mocked PROMPT stage prints positive_prompt containing expected text",
+          "run() with debug=True and mocked PROMPT stage prints negative_prompt containing expected text",
+          "run() with debug=True and mocked PROMPT stage prints style_parameters dict",
+          "run() with debug=True and mocked IMAGE stage prints image path",
+          "run() with debug=True and mocked PIXELIZATION stage prints pixelized image path",
+          "run() with debug=True and mocked POST_PROCESSING stage prints output asset paths",
+          "run() with debug=False and mocked stages produces zero '[DEBUG]' lines in stdout",
+          "All existing orchestrator tests pass without modification"
         ],
         "integration": [
-          "Orchestrator correctly constructs PreProcessingInput from real ImageGenOutput schema with remove_background=True",
-          "Orchestrator correctly passes real PreProcessingOutput.image_path to PixelizationInput"
+          "Full pipeline run with debug=True and all stages mocked produces complete debug output sequence in correct order",
+          "Full pipeline run from main.py CLI '--prompt test --debug' with mocked adapters prints debug info to stdout"
         ],
-        "e2e-manual": []
-      },
-      "skills": [
-        "tdd-workflow",
-        "systematic-debugging"
-      ],
-      "complete": true
-    },
-    {
-      "task": "Verify Optimized Pipeline End-to-End",
-      "description": "Run the optimized pipeline against real APIs and ComfyUI to validate improved pixel art quality at 32x32 and 64x64 target sizes.",
-      "steps": [
-        {
-          "step": 1,
-          "description": "Run python main.py --prompt 'a pixel art anime girl with blonde hair full body standing pose' with valid API keys and running ComfyUI"
-        },
-        {
-          "step": 2,
-          "description": "Verify output/assets/ contains correctly sized assets and intermediate files show the new pipeline order"
-        },
-        {
-          "step": 3,
-          "description": "Compare old vs new results: check that character proportions are preserved and colors are strictly within palette"
-        },
-        {
-          "step": 4,
-          "description": "Run all pytest tests to confirm no regressions across the full test suite"
-        }
-      ],
-      "acceptance-criteria": "Full pipeline produces pixel art assets where: character is recognizable at 64x64. Colors are strictly within the chosen palette. Character proportions are preserved without deformation. All pytest tests pass.",
-      "test-plan": {
-        "unit": [],
-        "integration": [],
         "e2e-manual": [
-          "Run full pipeline with --prompt -> verify 32x32 and 64x64 PNG assets have recognizable character shape",
-          "Open output assets in image viewer -> verify all pixel colors belong to sweetie-16 palette",
-          "Compare intermediate images: pre-processed 256px image shows clean background removal and subject centering",
-          "Compare pixelized image: ComfyUI output at 256px preserves character proportions without deformation",
-          "Run pytest -> all unit and integration tests pass"
+          "Run 'python main.py --prompt \"pixel art sword\" --debug' against real APIs and visually verify debug output shows prompts and file paths"
         ]
       },
       "skills": [
-        "verification-before-completion"
+        "tdd-workflow",
+        "testing-safe-protocol"
       ],
-      "complete": true
+      "complete": false
     }
   ]
 }
