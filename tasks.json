@@ -63,7 +63,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Add Debug Output to Pipeline Orchestrator",

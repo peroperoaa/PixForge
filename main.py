@@ -120,6 +120,12 @@ def build_parser() -> argparse.ArgumentParser:
         dest="auto_detect",
         help="Auto-detect start stage from existing artifacts in the output directory",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Enable debug output for verbose logging and diagnostics",
+    )
 
     return parser
 
@@ -179,6 +185,7 @@ def args_to_config(args: argparse.Namespace) -> FullPipelineConfig:
             remove_background=not args.no_remove_bg,
             asset_name=args.asset_name,
             output_dir=args.output_dir,
+            debug=args.debug,
         )
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)

@@ -127,3 +127,14 @@ class TestArgsToConfigMapping:
         with pytest.raises(SystemExit) as exc_info:
             args_to_config(args)
         assert exc_info.value.code == 2
+
+    # Debug flag mapping
+    def test_debug_default_false_in_config(self):
+        args = self.parser.parse_args(["--prompt", "sword"])
+        config = args_to_config(args)
+        assert config.debug is False
+
+    def test_debug_true_when_flag_passed(self):
+        args = self.parser.parse_args(["--prompt", "sword", "--debug"])
+        config = args_to_config(args)
+        assert config.debug is True

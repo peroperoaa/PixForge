@@ -91,3 +91,12 @@ class TestCLIArgumentParsing:
         assert args.prompt is None
         assert args.input is None
         assert args.auto_detect is False
+
+    # Case 8: --debug flag
+    def test_debug_flag_default_false(self):
+        args = self.parser.parse_args(["--prompt", "test"])
+        assert args.debug is False
+
+    def test_debug_flag_when_passed(self):
+        args = self.parser.parse_args(["--prompt", "test", "--debug"])
+        assert args.debug is True
