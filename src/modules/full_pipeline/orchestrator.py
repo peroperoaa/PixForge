@@ -24,6 +24,12 @@ from src.modules.pre_processing.interface import BasePreProcessor
 from src.modules.pre_processing.schemas import PreProcessingInput
 
 
+def _debug_print(config: "FullPipelineConfig", message: str) -> None:
+    """Print a debug message to stdout if config.debug is True."""
+    if config.debug:
+        print(f"[DEBUG] {message}")
+
+
 class FullPipeline:
     """Orchestrates the full pixel-art generation pipeline.
 
@@ -121,6 +127,20 @@ class FullPipeline:
                         duration_seconds=stage_duration,
                     )
                 )
+
+                # Debug output after successful stage completion
+                if stage == PipelineStage.PROMPT:
+                    _debug_print(config, f"positive_prompt: {result_output.positive_prompt}")
+                    _debug_print(config, f"negative_prompt: {result_output.negative_prompt}")
+                    _debug_print(config, f"style_parameters: {result_output.style_parameters}")
+                elif stage == PipelineStage.IMAGE:
+                    _debug_print(config, f"generated image path: {result_output.image_path}")
+                    if self._pre_processor is not None:
+                        _debug_print(config, f"pre-processed image path: {pre_output.image_path}")
+                elif stage == PipelineStage.PIXELIZATION:
+                    _debug_print(config, f"pixelized image path: {result_output.image_path}")
+                elif stage == PipelineStage.POST_PROCESSING:
+                    _debug_print(config, f"output asset paths: {result_output.output_paths}")
 
             except Exception as e:
                 stage_duration = time.monotonic() - stage_start
