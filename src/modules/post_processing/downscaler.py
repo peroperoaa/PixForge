@@ -1,4 +1,4 @@
-"""Nearest-neighbor downscaler for pixel-art image resizing."""
+"""BOX (area-average) downscaler for pixel-art image resizing."""
 
 from typing import List
 
@@ -8,14 +8,14 @@ from src.modules.post_processing.exceptions import DownscaleError
 
 
 class Downscaler:
-    """Resizes images to exact square pixel dimensions using nearest-neighbor interpolation.
+    """Resizes images to exact square pixel dimensions using BOX (area-average) resampling.
 
-    Nearest-neighbor sampling preserves hard pixel edges, making it ideal for
-    pixel-art workflows where anti-aliased blending would corrupt the result.
+    BOX resampling averages all source pixels that map to each output pixel,
+    preserving more detail than nearest-neighbor while keeping pixel-art crisp.
     """
 
     def downscale(self, image: Image.Image, target_size: int) -> Image.Image:
-        """Resize an image to target_size × target_size using NEAREST resampling.
+        """Resize an image to target_size × target_size using BOX resampling.
 
         Non-square source images are center-cropped to the largest inscribed
         square before resizing.
@@ -36,12 +36,12 @@ class Downscaler:
             )
 
         cropped = self._center_crop_square(image)
-        return cropped.resize((target_size, target_size), Image.NEAREST)
+        return cropped.resize((target_size, target_size), Image.BOX)
 
     def downscale_multi(
         self, image: Image.Image, target_sizes: List[int]
     ) -> List[Image.Image]:
-        """Resize an image to multiple square sizes using NEAREST resampling.
+        """Resize an image to multiple square sizes using BOX resampling.
 
         Args:
             image: Source PIL Image (any mode).

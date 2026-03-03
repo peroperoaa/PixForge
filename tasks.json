@@ -102,7 +102,7 @@
       "skills": [
         "tdd-workflow"
       ],
-      "complete": false
+      "complete": true
     },
     {
       "task": "Disable Default Palette Quantization",

@@ -1,4 +1,4 @@
-"""Tests for Downscaler - nearest-neighbor image downscaling."""
+"""Tests for Downscaler - BOX (area-average) image downscaling."""
 
 import pytest
 from PIL import Image
@@ -31,8 +31,8 @@ class TestDownscaleSingle:
         result = ds.downscale(img, 32)
         assert result.mode == "RGBA"
 
-    def test_downscale_nearest_no_blending(self):
-        """4x4 checkerboard scaled to 2x2 has exact pixel values (no blending)."""
+    def test_downscale_box_solid_blocks(self):
+        """4x4 checkerboard (solid 2x2 blocks) scaled to 2x2 preserves block colors with BOX."""
         # Build a 4x4 checkerboard: top-left 2x2 = black, top-right 2x2 = white, etc.
         img = Image.new("RGB", (4, 4))
         black = (0, 0, 0)
@@ -49,8 +49,8 @@ class TestDownscaleSingle:
         ds = Downscaler()
         result = ds.downscale(img, 2)
         rp = result.load()
-        # With NEAREST from 4x4 to 2x2, pixel (0,0)→samples from (0,0)=black
-        # pixel (1,0)→samples from (2,0)=white, pixel (0,1)→(0,2)=white, pixel (1,1)→(2,2)=black
+        # With BOX from 4x4 to 2x2, each output pixel averages its 2x2 source block.
+        # Since each block is solid, the average equals the block color.
         assert rp[0, 0] == black
         assert rp[1, 0] == white
         assert rp[0, 1] == white
